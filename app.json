@@ -25,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "92dd77c7-b940-448f-a25f-e7066434c928"
+      }
+    },
+    "owner": "daviddor"
   }
 }
