@@ -1,14 +1,12 @@
 import 'react-native-gesture-handler';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
 import * as React from 'react'
-import { StyleSheet, Text, View } from 'react-native';
 import ProductsListScreen from './components/products_list';
 import BarcodeScanScreen from './components/barcode_scan';
 import DateScanScreen from './components/date_scan';
 
-const Stack = createStackNavigator();
 
+const Stack = createStackNavigator();
 
 function ProductsStack() {
     return (
@@ -23,8 +21,6 @@ function ProductsStack() {
 
 export default function ProductsScreen() {
     return (
-        // <NavigationContainer>
-            <ProductsStack />
-        /* </NavigationContainer> */
+          <ProductsStack />
     )
 }
