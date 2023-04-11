@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
-
 
 export default function BarcodeScanScreen() {
     const [hasPermission, setHasPermission] = useState(null);
@@ -36,30 +35,44 @@ export default function BarcodeScanScreen() {
     }
     return (
       <View style={styles.container}>
-        <Text>Please point your phone's camera to the product's barcode</Text>
-        {isFocused ? (
-          <BarCodeScanner
-            onBarCodeScanned={scanned ? undefined : handleBarCode}
-            style={StyleSheet.absoluteFillObject}
-          />) : null }
-        { scanned && setScanned(false) }
+        <View style={styles.topSection}>
+          <Text style={styles.instruction}>Please point the camera to the product's barcode</Text>
+        </View>
+        <View style={styles.bottomSection}>
+          {isFocused ? (
+            <BarCodeScanner
+              onBarCodeScanned={scanned ? undefined : handleBarCode}
+              style={[styles.scanner, StyleSheet.absoluteFillObject]}
+            />) : null }
+          { scanned && setScanned(false) }
+        </View>
       </View>
     );
 }
 
 const styles = StyleSheet.create({
+    topSection: {
+      backgroundColor: 'black',
+    },
     instruction: {
-      flex: 1,
-      flexDirection: 'column',
-      justifyContent: 'flex-end',
+      color: 'white',
+      textAlign: 'center',
+      marginTop: 10,
+      marginBottom: 10,
+      fontWeight: 'bold',
+    },
+    scanner: {
+      backgroundColor: 'black',
     },
     container: {
-      flex: 2,
-      flexDirection: 'column',
-      justifyContent: 'flex-end',
+      flex: 1,
+    },
+    bottomSection: {
+      flex: 1,
     },
     permissions: {
       flex: 1,
       alignItems: 'center',
-      justifyContent: 'center' },
+      justifyContent: 'center',
+    },
   });

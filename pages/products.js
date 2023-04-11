@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import { createStackNavigator } from '@react-navigation/stack';
-import * as React from 'react'
+import * as React from 'react';
 import ProductsListScreen from './components/products_list';
 import BarcodeScanScreen from './components/barcode_scan';
 import DateScanScreen from './components/date_scan';
