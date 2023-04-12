@@ -15,7 +15,11 @@ export default function DateScanScreen() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ barcode: product_barcode }),
+          body: JSON.stringify({ db : "products",
+            collection : "barcodes",
+            query : {
+            ItemCode : { _text: product_barcode } }
+            }),
         }).then(result => result.json());
         const extractedInfo = res.map(item => {
           return {
@@ -28,7 +32,7 @@ export default function DateScanScreen() {
     }, []);
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text>Date scan, barcode: {route.params?.barcode} name: {productInfo.length > 0 ? productInfo[0].manufacturer : "aaa"} </Text>
+            <Text>Date scan, barcode: {route.params?.barcode} name: {productInfo.length > 0 ? productInfo[0].manufacturer : "product not found"} </Text>
         </View>
     )
 }

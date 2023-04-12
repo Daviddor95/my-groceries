@@ -20,7 +20,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <StatusBar style="auto" />
-      <Drawer.Navigator initialRouteName="Products">
+      <Drawer.Navigator initialRouteName="Products" screenOptions={{headerShown: false}}>
         <Drawer.Screen name="Products" component={ProductsScreen} />
         <Drawer.Screen name="Recipes" component={RecipesScreen} />
         <Drawer.Screen name="Grocery lists" component={GroceryListsScreen} />
