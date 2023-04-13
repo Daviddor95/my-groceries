@@ -5,6 +5,7 @@ import { useNavigation, NavigationContainer } from '@react-navigation/native';
 //import { createStackNavigator } from '@react-navigation/stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 // import { FloatingAction } from "react-native-floating-action";
+import { AntDesign } from '@expo/vector-icons'; // import icons from expo vector icons library
 
 const styles = StyleSheet.create({
     container: {
@@ -55,13 +56,7 @@ const Refrigerator= () => {
     <SafeAreaView style={styles.container}>
         <FlatList 
         data={foodProducts}
-        renderItem={
-            ({ item }) => 
-            <Text style={styles.item}>{item.name}</Text>
-            // <Button>+</Button>
-            // <Button>-</Button>
-            // <Button>-</Button>
-        }
+        renderItem={({ item }) => ProductDetail(0, item)}
         keyExtractor={(item) => item.key}
         contentContainerStyle={styles.listContainer}/>
         </SafeAreaView>
@@ -88,6 +83,24 @@ function KitchenCabinet() {
     </View>
     );
 }
+
+
+const ProductDetail = (amount, item) => {
+    
+    return (
+    <View>
+        <Text style={styles.item}>{item.name}</Text>
+        <Text>amount is {amount}</Text>
+        <Button title="+" onPress={() => Alert.alert('plus')}/>
+        <Button title="-" onPress={() => Alert.alert('minus')}/>
+        <Button title="X" onPress={() => Alert.alert('X')}/>
+    </View>
+    // <TouchableOpacity onPress={handlePress}>
+    //     <Text style={{ color: 'black', fontSize: 17 }}>Scan</Text>
+    // </TouchableOpacity>
+    );
+};
+
 
 const FloatingScan = () => {
     const actions = [{text: 'Scan',name: 'scanFunc'}];
