@@ -1,0 +1,16 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=samgdb;AccountKey=8hXUdctZhK8GDUdFXLSjN+4Skk+BsM2oZjmseafglKx76X5Y6h1DpjNtv54HyaxhAQnS1QLDCXjx+AStH4uYpQ==;EndpointSuffix=core.windows.net",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "ATLAS_URI": "mongodb+srv://regular_user:mdbru1@mygroceries.csefsud.mongodb.net/?retryWrites=true&w=majority",
+    "ATLAS_CLUSTER": "mygroceries",
+    "ATLAS_DATABASE": "products",
+    "ATLAS_COLLECTION": "barcodes",
+    "FUNCTIONS_EXTENSION_VERSION": "~4",
+    "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "DefaultEndpointsProtocol=https;AccountName=samgdb;AccountKey=8hXUdctZhK8GDUdFXLSjN+4Skk+BsM2oZjmseafglKx76X5Y6h1DpjNtv54HyaxhAQnS1QLDCXjx+AStH4uYpQ==;EndpointSuffix=core.windows.net",
+    "WEBSITE_CONTENTSHARE": "mongodbdriver922b",
+    "samgdb_STORAGE": "DefaultEndpointsProtocol=https;AccountName=samgdb;AccountKey=8hXUdctZhK8GDUdFXLSjN+4Skk+BsM2oZjmseafglKx76X5Y6h1DpjNtv54HyaxhAQnS1QLDCXjx+AStH4uYpQ=="
+  },
+  "ConnectionStrings": {}
+}
