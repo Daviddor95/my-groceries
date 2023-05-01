@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Text, View } from 'react-native';
 import { useRoute } from "@react-navigation/native";
 import { useState, useEffect } from 'react';
+import db_req from '../../DB_requests/request';
 
 
 export default function DateScanScreen() {
@@ -9,26 +10,16 @@ export default function DateScanScreen() {
     const product_barcode = "" + route.params?.barcode;
     const [productInfo, setProductInfo] = useState([]);
     useEffect(() => {
-      async function getProductInfo() {
-        const res = await fetch('https://mongodbdriver.azurewebsites.net/api/driver?code=kTjkzOm7Ckr4SvjHuD_UQy1I1k-VgtYFSsx5ZH0QYNnqAzFu4nQJow==', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ db : "products",
-            collection : "barcodes",
-            query : {
-            ItemCode : { _text: product_barcode } }
-            }),
-        }).then(result => result.json());
-        const extractedInfo = res.map(item => {
-          return {
-            manufacturer: item.ManufacturerItemDescription._text,
-          };
-        });
-        setProductInfo(extractedInfo);
-      }
-      getProductInfo();
+		async function getProductName() {
+			const res = await db_req("products", "barcodes", "get", { ItemCode : { _text: product_barcode } });
+			const extractedInfo = res.map(item => {
+                return {
+                    manufacturer: item.ManufacturerItemDescription._text,
+                };
+			});
+			setProductInfo(extractedInfo);
+		}
+		getProductName();
     }, []);
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

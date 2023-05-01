@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Pressable } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
@@ -35,25 +35,23 @@ export default function BarcodeScanScreen() {
     }
     return (
       <View style={styles.container}>
-        <View style={styles.topSection}>
-          <Text style={styles.instruction}>Please point the camera to the product's barcode</Text>
-        </View>
-        <View style={styles.bottomSection}>
+        <Text style={styles.instruction}>Please point the camera to the product's barcode</Text>
+        <View style={styles.scanner}>
           {isFocused ? (
             <BarCodeScanner
               onBarCodeScanned={scanned ? undefined : handleBarCode}
-              style={[styles.scanner, StyleSheet.absoluteFillObject]}
+              style={StyleSheet.absoluteFillObject}
             />) : null }
           { scanned && setScanned(false) }
+          <Pressable style={styles.button} onPress={() => navigation.push('Add manually')}>
+              <Text style={styles.instruction2}>Or click here to add the product manually</Text>
+          </Pressable>
         </View>
       </View>
     );
 }
 
 const styles = StyleSheet.create({
-    topSection: {
-      backgroundColor: 'black',
-    },
     instruction: {
       color: 'white',
       textAlign: 'center',
@@ -61,14 +59,28 @@ const styles = StyleSheet.create({
       marginBottom: 10,
       fontWeight: 'bold',
     },
-    scanner: {
-      backgroundColor: 'black',
+    instruction2: {
+      color: 'black',
+      textAlign: 'center',
+      fontWeight: 'bold',
+      margin: 10,
     },
     container: {
       flex: 1,
+      backgroundColor: 'black',
     },
-    bottomSection: {
+    scanner: {
       flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    button: {
+      backgroundColor: 'white',
+      alignSelf: 'baseline',
+      position: 'absolute',
+      bottom: 15,
+      borderRadius: 10,
+      elevation: 5,
     },
     permissions: {
       flex: 1,
