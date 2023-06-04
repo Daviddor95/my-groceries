@@ -3,9 +3,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import db_req from '../../DB_requests/request';
+import db_req from '../../../DB_requests/request';
 import { useNavigation } from '@react-navigation/native';
-
+// import onBackPress from '../../components/on_back';
 
 export default function AddManual() {
     const [name, onNameChange] = React.useState('');
@@ -39,6 +39,7 @@ export default function AddManual() {
             const updateStr = { $push: { products: { name: name, barcode: barcode, exp_date: dateStr, location: loc, amount: quantity, unit: selectedUnit } } };
             const request = { query: { u_id: "1" }, update: updateStr };
             console.log(await db_req("users", "regular_users", "update", request));
+            // BackHandler.removeEventListener('hardwareBackPress', onBackPress);
             navigation.pop();
         }
     };
