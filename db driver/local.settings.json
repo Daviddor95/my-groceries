@@ -10,7 +10,9 @@
     "FUNCTIONS_EXTENSION_VERSION": "~4",
     "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "DefaultEndpointsProtocol=https;AccountName=samgdb;AccountKey=8hXUdctZhK8GDUdFXLSjN+4Skk+BsM2oZjmseafglKx76X5Y6h1DpjNtv54HyaxhAQnS1QLDCXjx+AStH4uYpQ==;EndpointSuffix=core.windows.net",
     "WEBSITE_CONTENTSHARE": "mongodbdriver922b",
-    "samgdb_STORAGE": "DefaultEndpointsProtocol=https;AccountName=samgdb;AccountKey=8hXUdctZhK8GDUdFXLSjN+4Skk+BsM2oZjmseafglKx76X5Y6h1DpjNtv54HyaxhAQnS1QLDCXjx+AStH4uYpQ=="
+    "samgdb_STORAGE": "DefaultEndpointsProtocol=https;AccountName=samgdb;AccountKey=8hXUdctZhK8GDUdFXLSjN+4Skk+BsM2oZjmseafglKx76X5Y6h1DpjNtv54HyaxhAQnS1QLDCXjx+AStH4uYpQ==",
+    "WEBSITE_RUN_FROM_PACKAGE": "https://samgdb.blob.core.windows.net/function-releases/20230503104324-64bd190b-e87d-4fe9-8b78-50ec187d27d8.zip?sv=2018-03-28&sr=b&sig=lXlzd4hSRqYZZubk9%2B1gfUirxJHRZgN5A6lu16gngns%3D&st=2023-05-03T10%3A38%3A37Z&se=2033-05-03T10%3A43%3A37Z&sp=r",
+    "WEBSITE_MOUNT_ENABLED": "1"
   },
   "ConnectionStrings": {}
 }

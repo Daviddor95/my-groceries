@@ -6,7 +6,14 @@ module.exports = async function (context, req) {
     try {
         const db = client.db(req.body.db);
         const collection = db.collection(req.body.collection);
-        const ret = await collection.find(req.body.query).toArray();
+        var ret;
+        if (req.body.type === 'get') {
+            ret = await collection.find(req.body.content).toArray();
+        } else if (req.body.type === 'add') {
+            ret = await collection.insertOne(req.body.content);
+        } else if (req.body.type === 'update') {
+            ret = await collection.updateOne(req.body.content.query, req.body.content.update);   // JSON.parse(
+        }
         context.res = {
             "headers": {
                 "content-type": "application/json"
