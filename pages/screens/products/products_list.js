@@ -6,7 +6,7 @@ import { useNavigation, NavigationContainer } from '@react-navigation/native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 // import { FloatingAction } from "react-native-floating-action";
 import { AntDesign } from '@expo/vector-icons'; // import icons from expo vector icons library
-import Product from './product';
+import Product from '../../components/product';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const styles = StyleSheet.create({
@@ -168,7 +168,7 @@ const FloatingScan = () => {
         }}
         onPressIn={handlePress}>
             <ImageBackground 
-            source={require('./../../assets/barcode-scan-custom5.png')} 
+            source={require('../../../assets/barcode-scan-custom5.png')} 
             style={{top: 5,right: 2, width: '80%', height: '80%',backgroundColor: 'black', alignItems: 'flex-start',}}
             />
             <Text style={{ color: 'black', fontSize: 0 }}>Scan</Text>
