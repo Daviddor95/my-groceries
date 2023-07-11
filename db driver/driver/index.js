@@ -12,7 +12,7 @@ module.exports = async function (context, req) {
         } else if (req.body.type === 'add') {
             ret = await collection.insertOne(req.body.content);
         } else if (req.body.type === 'update') {
-            ret = await collection.updateOne(req.body.content.query, req.body.content.update);   // JSON.parse(
+            ret = await collection.updateOne(req.body.content.query, req.body.content.update);
         }
         context.res = {
             "headers": {
