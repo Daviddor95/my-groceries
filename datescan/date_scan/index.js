@@ -1,109 +1,141 @@
-'use strict';
-
-const async = require('async');
-// const fs = require('fs');
-// const https = require('https');
-// const path = require("path");
-// const createReadStream = require('fs').createReadStream
-const sleep = require('util').promisify(setTimeout);
-const ComputerVisionClient = require('@azure/cognitiveservices-computervision').ComputerVisionClient;
-const ApiKeyCredentials = require('@azure/ms-rest-js').ApiKeyCredentials;
-const key = process.env.AZURE_KEY;
-const endpoint = process.env.Azure_ENDPOINT;
-const computerVisionClient = new ComputerVisionClient(
-    new ApiKeyCredentials({ inHeader: { 'Ocp-Apim-Subscription-Key': key } }), endpoint);
-
-
 module.exports = async function (context, req) {
+    const Buffer = require('buffer/').Buffer;
+    const key = process.env.AZURE_KEY;
+    const endpoint = process.env.Azure_ENDPOINT + "computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read&language=en&gender-neutral-caption=False";   // "vision/v3.2/read/analyze?language=en&readingOrder=natural&model-version=latest";
     try {
-        async.series([
-            async function () {
-                const text = await readFromImg(computerVisionClient, req.body.img_b64);
-                const recDate = recognizeDate(text);
-                if (recDate) {
-                    context.res = {
-                        "headers": {
-                            "content-type": "application/json"
-                        },
-                        "body": recDate
-                    };
-                }
-                function recognizeDate(readResults) {
-                    // for (const page in readResults) {
-                        const result = readResults[0];
-                        if (result.lines.length) {
-                            var dates = [];
-                            for (const line of result.lines) {
-                                var lineText = line.words.map(w => w.text).join(' ');
-                                var dateStr = lineText.match(/(0?[1-9]|[12]\d|30|31)[^\w\d\r\n:](0?[1-9]|1[0-2])[^\w\d\r\n:](\d{4}|\d{2})/);
-                                if (dateStr) {
-                                    dates = dates.concat(dateStr);  // new Date(dateStr);
-                                }
-                            }
-                            var datesObj = [];
-                            for (const date of dates) {
-                                const day = Number(date.slice(0, 2));
-                                const month = Number(date.slice(3, 5)) - 1;
-                                const year = Number(date.slice(6, 10));
-                                datesObj.push(new Date(year, month, day));
-                            }
-                            if (datesObj.length > 1) {
-                                return new Date(Math.max.apply(null, datesObj));
-                            } else if (datesObj.length === 1) {
-                                return datesObj[0];
-                            }
-                        }
-                        else {
-                            return null;
-                        }
-                    // }   
-                }
-                async function readFromImg(client, img) {
-                    var img = Buffer.from(img, 'base64')
-                    // To recognize text in a local image, replace client.read() with readTextInStream() as shown:
-                    let result = await client.analyzeImageInStream(img);
-                    // Operation ID is last path segment of operationLocation (a URL)
-                    let operation = result.operationLocation.split('/').slice(-1)[0];
-                    // Wait for read recognition to complete
-                    // result.status is initially undefined, since it's the result of read
-                    while (result.status !== "succeeded") {
-                        await sleep(1000);
-                        result = await client.getReadResult(operation);
-                    }
-                    return result.analyzeResult.readResults;
-                }
+        const binaryImage = Buffer.from(req.body.img_b64.replace('data:image/jpeg;base64,', ''), 'base64');
+        await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/octet-stream',
+                'Ocp-Apim-Subscription-Key': key,
+                'Content-Length': Buffer.byteLength(binaryImage)
             },
-            function () {
-                return new Promise((resolve) => {
-                    resolve();
-                });
-            }], (err) => { throw (err); });
-        var ret;
-
-    } catch (e) {
-        context.res = {
-            "status": 500,
-            "headers": {
-                "content-type": "application/json"
-            },
-            "body": {
-                "message": e.toString()
+            body: binaryImage
+        }).then(res => res.json()).then((resp) => {
+            var rec_date = getDate(resp);
+            var jsonRes;
+            if (!rec_date) {
+                jsonRes = { dateFound: false, error: "Date not recognized" };
+            } else {
+                jsonRes = { dateFound: true, date: rec_date };
             }
+            context.res = {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                },
+                body: JSON.stringify(jsonRes)
+            };
+        }).catch(err => {
+            context.res = {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                },
+                body: JSON.stringify({ error: "API call: " + err.message })
+            };
+        });
+
+        function getDate(ocrRes) {
+            var results = ocrRes.readResult.content;
+            if (results && results.length) {
+                var dates = [];
+                var dateStr = results.match(/(?:(?:0?[1-9]|1[0-9]|2[0-9]|3[0-1])(?:\/|-|\.|\s)(?:0?[1-9]|1[0-2])(?:\/|-|\.|\s)(?:\d{4}|\d{2}))|(?:(?:0?[1-9]|1[0-2])(?:\/|-|\.|\s)(?:0?[1-9]|1[0-9]|2[0-9]|3[0-1])(?:\/|-|\.|\s)(?:\d{4}|\d{2}))|(?:(?:\d{4}|\d{2})(?:\/|-|\.|\s)(?:0?[1-9]|1[0-2])(?:\/|-|\.|\s)(?:0?[1-9]|1[0-9]|2[0-9]|3[0-1]))|(?:(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:\/|-|\.|\s)\d{2}(?:\/|-|\.|\s)(?:\d{4}|\d{2}))|(?:(?:\d{2})(?:\/|-|\.|\s)(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:\/|-|\.|\s)(?:\d{4}|\d{2}))|(?:\d{2}(?:\/|-|\.)\d{4})|(?:\d{2}(?:\/|-|\.)\d{2})/gi);
+                if (dateStr && dateStr.length) {
+                    dates = dates.concat(dateStr);
+                }
+                var datesObj = [];
+                var monthsStr = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+                var currYear = new Date().getFullYear();
+                for (const date of dates) {
+                    var parts = date.split(/[\s-\.\/]+/);
+                    var day = "", month = "", year = "";
+                    if (parts.length === 2) {
+                        var part0int = parseInt(parts[0]);
+                        var part1int = parseInt(parts[1]);
+                        if (!isNaN(part1int) && part1int > currYear - 10 && part1int < currYear + 10) {
+                            day = "28";
+                            if (monthsStr.indexOf(parts[0]) > -1) {
+                                month = monthsStr.indexOf(parts[0]) + 1;
+                            } else if (!isNaN(part0int) && part0int > 0 && part0int < 13) {
+                                month = parts[0];
+                            } else {
+                                continue;
+                            }
+                            year = parts[1];
+                        } else if (parts[1].length === 2 && !isNaN(part1int)) {
+                            if (part1int > (currYear % 100) - 10 && part1int < (currYear % 100) + 10) {
+                                day = "28";
+                                if (monthsStr.indexOf(parts[0]) > -1) {
+                                    month = monthsStr.indexOf(parts[0]) + 1;
+                                } else if (!isNaN(part0int) && part0int > 0 && part0int < 13) {
+                                    month = parts[0];
+                                } else {
+                                    continue;
+                                }
+                                year = "20" + parts[1];
+                            } else if (part1int < 13 && part1int > 0) {
+                                if (!isNaN(part0int) && part0int > 0 && part0int < 32) {
+                                    day = parts[0];
+                                } else {
+                                    continue;
+                                }
+                                month = parts[1];
+                                year = currYear.toString();
+                            } else {
+                                continue;
+                            }
+                        } else if (monthsStr.indexOf(parts[1]) > -1) {
+                            day = parts[0];
+                            month = monthsStr.indexOf(parts[0]) + 1;
+                            year = currYear.toString();
+                        } else {
+                            continue;
+                        }
+                    } else if (parts.length === 3) {
+                        var part0int = parseInt(parts[0]);
+                        var part1int = parseInt(parts[1]);
+                        var part2int = parseInt(parts[2]);
+                        if (!isNaN(part0int) && part0int > 0 && part0int < 32) {
+                            day = parts[0];
+                        } else {
+                            continue;
+                        }
+                        if (monthsStr.indexOf(parts[1]) > -1) {
+                            month = monthsStr.indexOf(parts[1]) + 1;
+                        } else if (!isNaN(part1int) && part1int > 0 && part1int < 13) {
+                            month = parts[1];
+                        } else {
+                            continue;
+                        }
+                        if (!isNaN(part2int) && part2int > (currYear - 10) && part2int < (currYear + 10)) {
+                            year = parts[2];
+                        } else if (!isNaN(part2int) && part2int > ((currYear % 100) - 10) && part2int < ((currYear % 100) + 10)) {
+                            year = "20" + parts[2];
+                        } else {
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+                    datesObj.push(new Date(parseInt(year), parseInt(month) - 1, parseInt(day)));
+                }
+                if (datesObj.length > 0) {
+                    return new Date(Math.max.apply(null, datesObj));
+                }
+                return null;
+            }
+            return null;
         }
+    } catch (e) {
+        const err = JSON.stringify({ error: 'message: ' + e.message + '. stack: ' + e.stack });
+        context.res = {
+            body: err,
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+            },
+        };
     }
 }
-
-
-// module.exports = async function (context, req) {
-//     context.log('JavaScript HTTP trigger function processed a request.');
-
-//     const name = (req.query.name || (req.body && req.body.name));
-//     const responseMessage = name
-//         ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-//         : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
-
-//     context.res = {
-//         // status: 200, /* Defaults to 200 */
-//         body: responseMessage
-//     };
-// }

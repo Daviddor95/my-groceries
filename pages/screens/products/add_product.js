@@ -2,62 +2,34 @@ import * as React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import db_req from '../../../DB_requests/request';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-export default function AddManual() {
-    const [name, onNameChange] = React.useState('');
-    const [barcode, onBarcodeChange] = React.useState('');
+export default function AddProduct() {
     const [quantity, onQuantityChange] = React.useState('');
     const [selectedUnit, setSelectedUnit] = React.useState('');
-    const [date, setDate] = React.useState(new Date());
-    const [dateStr, setDateStr] = React.useState('Exp. date');
-    const [show, setShow] = React.useState(false);
     const [loc, setLoc] = React.useState('');
     const [err, setErr] = React.useState(false);
     const navigation = useNavigation();
-
-    const onChangeDate = (e, selectedDate) => {
-        const newDate = selectedDate;
-        setShow(false);
-        setDate(date => new Date(newDate));
-        setDateStr(dateStr => (new Date(newDate)).toLocaleDateString());
-    };
-
-    const showDatePicker = (e) => {
-        if (Platform.OS === 'android') {
-            setShow(true);
-        }
-    };
-
-    const addProduct = async (e) => {
-        if (name == 0 || quantity == 0 || selectedUnit == 0 || loc == 0) {
+    const route = useRoute();
+    var currUID = "1";
+    const add = async (e) => {
+        if (quantity == 0 || selectedUnit == 0 || loc == 0) {
             setErr(true);
         } else {
-            const updateStr = { $push: { products: { name: name, barcode: barcode, exp_date: dateStr, location: loc, amount: quantity, unit: selectedUnit } } };
-            const request = { query: { u_id: "1" }, update: updateStr };
+            const updateStr = { $push: { ["product"]: { barcode: route.params?.prod_barcode, exp_date: route.params?.expDate, location: loc, amount: quantity, unit: selectedUnit } } };
+            const request = { query: { u_id: currUID }, update: updateStr };
             console.log(await db_req("users", "regular_users", "update", request));
-            navigation.pop();
+            navigation.popToTop();
         }
     };
 
     return (
         <View>
-            <Text style={styles.instruction}>Please fill the following fields about the desired product in order to add it to the products list:</Text>
+            <Text style={styles.instruction}>Detected expiration date: {route.params?.expDate}.</Text>
+            <Text style={styles.instruction}>Please select the product's location and quantity in order to add it to the products list:</Text>
             <View style={styles.container}>
-                <TextInput style={styles.input1} value={name} onChangeText={onNameChange} placeholder='Product name' />
-            </View>
-            <View style={styles.container}>
-                <TextInput style={styles.input2} value={barcode} onChangeText={onBarcodeChange} placeholder='Barcode (Optional)' keyboardType='numeric' />
-                <Pressable onPress={showDatePicker}>
-                    <View style={styles.dateContainer}>
-                        <Text style={{ color: dateStr !== 'Exp. date' ? 'black' : 'darkgray' }}>{dateStr}</Text>
-                    </View>
-                </Pressable>
-            </View>
-            <View style={styles.container}>
-                <TextInput style={styles.input3} value={quantity} onChangeText={onQuantityChange} placeholder='Quantity' keyboardType='numeric' />
+                <TextInput style={styles.input} value={quantity} onChangeText={onQuantityChange} placeholder='Quantity' keyboardType='numeric' />
                 <View style={styles.pickerContainer}>
                     <Picker style={selectedUnit == 0 ? styles.placeholder : styles.picker} itemStyle={styles.items} mode='dropdown' selectedValue={selectedUnit} onValueChange={(val, index) => { if (val != "0") { setSelectedUnit(val) } } }>
                         <Picker.Item label='Select unit' value='0' style={styles.placeholder} />
@@ -79,14 +51,13 @@ export default function AddManual() {
                         <Picker.Item label='freezer' value='freezer' />
                     </Picker>
                 </View>
-                <Pressable style={styles.submit} onPress={addProduct}>
+                <Pressable style={styles.submit} onPress={add}>
                     <Text style={styles.buttonText}>Add product</Text>
                 </Pressable>
             </View>
             <View style={styles.container}>
                 { err && <Text style={styles.instruction}>Some required fields are missing, please make sure you entered the required information about the product.</Text> }
             </View>
-            { show && <DateTimePicker testID="dateTimePicker" value={date} mode='date' onChange={onChangeDate} /> }
         </View>
     )
 }
@@ -101,31 +72,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    input1: {
-        flex: 1,
-        marginTop: 15,
-        marginBottom: 15,
-        marginRight: 10,
-        marginLeft: 10,
-        padding: 10,
-        borderRadius: 10,
-        borderColor: 'gray',
-        backgroundColor: 'white',
-        elevation: 5,
-    },
-    input2: {
-        flex: 2,
-        marginTop: 15,
-        marginBottom: 15,
-        marginRight: 10,
-        marginLeft: 10,
-        padding: 10,
-        borderRadius: 10,
-        borderColor: 'gray',
-        backgroundColor: 'white',
-        elevation: 5,
-    },
-    input3: {
+    input: {
         flex: 1,
         marginTop: 15,
         marginBottom: 15,
@@ -141,18 +88,6 @@ const styles = StyleSheet.create({
         padding: 10,
         backgroundColor: 'white',
         color: 'black',
-    },
-    dateContainer: {
-        flex: 1,
-        marginTop: 15,
-        marginBottom: 15,
-        marginRight: 10,
-        marginLeft: 10,
-        padding: 15,
-        borderRadius: 10,
-        borderColor: 'gray',
-        backgroundColor: 'white',
-        elevation: 5,
     },
     pickerContainer: {
         marginTop: 15,

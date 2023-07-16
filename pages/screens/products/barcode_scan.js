@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Pressable, BackHandler } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
-// import onBackPress from '../../components/on_back';
-
 
 export default function BarcodeScanScreen() {
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
     const navigation = useNavigation();
     const isFocused = useIsFocused();
+	var pushed = false;
+
     useEffect(() => {
 		const getPermissions = async () => {
         	const { status } = await BarCodeScanner.requestPermissionsAsync();
@@ -17,12 +17,15 @@ export default function BarcodeScanScreen() {
     	};
     	getPermissions();
     }, []);
+
     const handleBarCode = async ({ type, data }) => {
 		setScanned(true);
-		// BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-		navigation.pop();
-		navigation.push('Date scan', { barcode: data, kind: type });
+		if (!pushed) {
+			navigation.push('Date scan', { barcode: data, kind: type });
+			pushed = true;
+		}
     };
+
     if (hasPermission === null) {
 		return (
         	<View style={styles.permissions}>
@@ -30,6 +33,7 @@ export default function BarcodeScanScreen() {
         	</View>
     	);
     }
+
     if (hasPermission === false) {
     	return (
         	<View style={styles.permissions}>
@@ -37,6 +41,7 @@ export default function BarcodeScanScreen() {
         	</View>
     	);
     }
+
     return (
     	<View style={styles.container}>
         	<Text style={styles.instruction}>Please point the camera to the product's barcode</Text>
