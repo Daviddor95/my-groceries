@@ -1,0 +1,50 @@
+import React, { useState } from 'react';
+import { View, TextInput, Button, Text, Linking } from 'react-native';
+
+const ProductImgSearch = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchResult, setSearchResult] = useState(null);
+    const handleSearch = async () => {
+        try {
+            const cx = 'a35009a4b442446a1'; 
+            const apiKey = 'AIzaSyCbip8NqTJgeyLnCh6iyAmaL4s08P76to0';
+            const country =  'countryIL'
+            const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${searchTerm}&cr=${country}&searchType=image`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.items && data.items.length > 0) {
+                const firstResult = data.items[0];
+                setSearchResult(firstResult);
+            } else {
+                setSearchResult(null);
+            }
+        } catch (error) {
+            console.error('Error occurred:', error);
+        }
+    };
+    const handleOpenLink = () => {
+        if (searchResult && searchResult.link) {Linking.openURL(searchResult.link);}
+    };
+    return (
+    <View> 
+        <TextInput/>
+        <TextInput/>
+        <TextInput/>
+        <TextInput
+        placeholder="Enter search term"
+        value={searchTerm}
+        onChangeText={text => setSearchTerm(text)}
+        />
+        <Button title="Search" onPress={handleSearch} />
+        {searchResult && (
+        <View>
+            <Text>{searchResult.title}</Text>
+            <Text>{searchResult.snippet}</Text>
+            <Button title="Open Link" onPress={handleOpenLink} />
+        </View>
+        )}
+    </View>
+    );
+};
+
+export default ProductImgSearch;

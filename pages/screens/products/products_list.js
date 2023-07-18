@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import { Animated, Image ,ImageBackground, StyleSheet, Text, View, Button, FlatList, SafeAreaView,TouchableOpacity,Dimensions, ScrollView} from 'react-native';
 import { useNavigation, NavigationContainer } from '@react-navigation/native';
 //import { createStackNavigator } from '@react-navigation/stack';
@@ -8,6 +9,8 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { AntDesign } from '@expo/vector-icons'; // import icons from expo vector icons library
 import Product from '../../components/product';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import db_req from '../../../DB_requests/request';
+import scan_req from '../../../DB_requests/scan_req';
 
 const styles = StyleSheet.create({
     container: {
@@ -38,30 +41,45 @@ const styles = StyleSheet.create({
     //     height: 75,
     // },
 });
-
 //const navigation = useNavigation();
 function Refrigerator() {
-    const [products, setProducts] = useState([
-        { id: '1', name: 'Apple', expiryDate: '21.04.23' },
-        { id: '2', name: 'Banana', expiryDate: '21.04.25' },
-        { id: '3', name: 'Orange', expiryDate: '21.04.28' },
-        { id: '4', name: 'Apple', expiryDate: '21.04.23' },
-        { id: '5', name: 'Banana', expiryDate: '21.04.25' },
-        { id: '6', name: 'Orange', expiryDate: '21.04.28' },
-        { id: '7', name: 'Apple', expiryDate: '21.04.23' },
-        { id: '8', name: 'Banana', expiryDate: '21.04.25' },
-        { id: '9', name: 'Orange', expiryDate: '21.04.28' },
-        { id: '10', name: 'Apple', expiryDate: '21.04.23' },
-        { id: '11', name: 'Banana', expiryDate: '21.04.25' },
-        { id: '12', name: 'Orange', expiryDate: '21.04.28' },
-        { id: '13', name: 'Apple', expiryDate: '21.04.23' },
-        { id: '14', name: 'Banana', expiryDate: '21.04.25' },
-        { id: '15', name: 'Orange', expiryDate: '21.04.28' },
-
-    ]);
+    const [products, setProducts] = useState([]);
+    const [databaseUpdated, setDatabaseUpdated] = useState(false);
+    const isFocused = useIsFocused();
+    async function productsListCreate() {
+        const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+        //const productsOfUser = usersDb.product
+        const productsOfUser = usersDb[0].product
+        const productsArray = []
+        currentId = 1
+        for (const p of productsOfUser){
+            
+            currentProduct = await db_req("products", "barcodes", "get", { ItemCode: { _text: p.barcode } });
+            if (currentProduct.length > 0){
+                //console.log(currentProduct)
+                nameOfProduct = currentProduct[0].ManufacturerItemDescription._text
+                productsArray.push({
+                    id: currentId,
+                    name: nameOfProduct,
+                    expiryDate: p.exp_date,
+                    location: p.location,
+                    amount: p.amount,
+                    unit: p.unit
+                });
+                currentId = currentId + 1;
+            }
+            
+        }
+        setProducts(productsArray);
+    }
+    useEffect(() => {
+        productsListCreate();
+    }, [isFocused]);
     
     const handleDelete = (productId) => {
         setProducts(products.filter((item) => item.id !== productId));
+        //setDatabaseUpdated(true);
+        //prodectsListCreate();
         //maybe another line needs to be added for updating the database of the user
     };
     
@@ -76,6 +94,43 @@ function Refrigerator() {
     </View>
     );
 };
+// //const navigation = useNavigation();
+// function Refrigerator() {
+//     const [products, setProducts] = useState([
+//         { id: '1', name: 'Apple', expiryDate: '21.04.23' },
+//         { id: '2', name: 'Banana', expiryDate: '21.04.25' },
+//         { id: '3', name: 'Orange', expiryDate: '21.04.28' },
+//         { id: '4', name: 'Apple', expiryDate: '21.04.23' },
+//         { id: '5', name: 'Banana', expiryDate: '21.04.25' },
+//         { id: '6', name: 'Orange', expiryDate: '21.04.28' },
+//         { id: '7', name: 'Apple', expiryDate: '21.04.23' },
+//         { id: '8', name: 'Banana', expiryDate: '21.04.25' },
+//         { id: '9', name: 'Orange', expiryDate: '21.04.28' },
+//         { id: '10', name: 'Apple', expiryDate: '21.04.23' },
+//         { id: '11', name: 'Banana', expiryDate: '21.04.25' },
+//         { id: '12', name: 'Orange', expiryDate: '21.04.28' },
+//         { id: '13', name: 'Apple', expiryDate: '21.04.23' },
+//         { id: '14', name: 'Banana', expiryDate: '21.04.25' },
+//         { id: '15', name: 'Orange', expiryDate: '21.04.28' },
+
+//     ]);
+    
+//     const handleDelete = (productId) => {
+//         setProducts(products.filter((item) => item.id !== productId));
+//         //maybe another line needs to be added for updating the database of the user
+//     };
+    
+//     return (
+//     <View>
+//         <FlatList data={products} keyExtractor={(item) => item.id}
+//         renderItem={
+//             ({ item }) => (
+//             <Product name={item.name} expiryDate={item.expiryDate} onDelete={() => handleDelete(item.id)}/>
+//         )}
+//         />
+//     </View>
+//     );
+// };
     // const [foodProducts, setFoodProducts] = useState([
     //     { key: '1', name: 'Banana' },
     //     { key: '2', name: 'Apple' },
@@ -123,27 +178,12 @@ function KitchenCabinet() {
 
 
 
-// function ProductDetail (item) {
-//     const img = require('./../../assets/tomato.jpg'); // need to be evantually the "item.image"
-//         //const [amount, setAmount] = useState(0);
-//     return (
-//     <View>
-//         <Image style={styles.productTinyImage} source={img}/>
-//         <Text style={styles.item}>{item.name}</Text>
-//         {/*<Text>amount is {amount}</Text>*/}
-//         {/* <Button title="+" onPress={()=>setAmount(amount + 1)}/>
-//         <Button title="-" onPress={()=>setAmount(amount - 1)}/>
-//         <Button title="X" onPress={()=>setAmount(0)}/> */}
-//     </View>
-//     );
-// }
-
-
 const FloatingScan = () => {
     const actions = [{text: 'Scan',name: 'scanFunc'}];
     const navigation = useNavigation();
     const handlePress = () => {
         navigation.navigate('Barcode scan');
+        
     };
   
     return (
