@@ -55,21 +55,15 @@ function Refrigerator() {
         currentId = 1
         for (const p of productsOfUser){
             currentProduct = await db_req("products", "barcodes", "get", { ItemCode: { _text: p.barcode } });
-            console.log("currentProduct:"+currentProduct)
             productImage = await db_req("products", "images", "get", { barcode: p.barcode });
-            console.log("productImage:"+productImage)
             if (currentProduct.length > 0){
-                //console.log(currentProduct)
                 nameOfProduct = currentProduct[0].ManufacturerItemDescription._text
                 if (productImage.length > 0){
                     img = productImage[0].image
-                    console.log("img" + img)
                 } else {
                     await ProductImgSearch(p.barcode);
                     productImage = await db_req("products", "images", "get", { barcode: p.barcode });
-                    console.log("newly uploaded productImage:"+productImage)
                     img = productImage[0].image
-                    console.log("newly added img" + img)
                 }
                 productsArray.push({
                     id: currentId,
@@ -93,9 +87,6 @@ function Refrigerator() {
     
     const handleDelete = (productId) => {
         setProducts(products.filter((item) => item.id !== productId));
-        //setDatabaseUpdated(true);
-        //prodectsListCreate();
-        //maybe another line needs to be added for updating the database of the user
     };
     
     return (
@@ -111,69 +102,7 @@ function Refrigerator() {
     </View>
     );
 };
-// //const navigation = useNavigation();
-// function Refrigerator() {
-//     const [products, setProducts] = useState([
-//         { id: '1', name: 'Apple', expiryDate: '21.04.23' },
-//         { id: '2', name: 'Banana', expiryDate: '21.04.25' },
-//         { id: '3', name: 'Orange', expiryDate: '21.04.28' },
-//         { id: '4', name: 'Apple', expiryDate: '21.04.23' },
-//         { id: '5', name: 'Banana', expiryDate: '21.04.25' },
-//         { id: '6', name: 'Orange', expiryDate: '21.04.28' },
-//         { id: '7', name: 'Apple', expiryDate: '21.04.23' },
-//         { id: '8', name: 'Banana', expiryDate: '21.04.25' },
-//         { id: '9', name: 'Orange', expiryDate: '21.04.28' },
-//         { id: '10', name: 'Apple', expiryDate: '21.04.23' },
-//         { id: '11', name: 'Banana', expiryDate: '21.04.25' },
-//         { id: '12', name: 'Orange', expiryDate: '21.04.28' },
-//         { id: '13', name: 'Apple', expiryDate: '21.04.23' },
-//         { id: '14', name: 'Banana', expiryDate: '21.04.25' },
-//         { id: '15', name: 'Orange', expiryDate: '21.04.28' },
 
-//     ]);
-    
-//     const handleDelete = (productId) => {
-//         setProducts(products.filter((item) => item.id !== productId));
-//         //maybe another line needs to be added for updating the database of the user
-//     };
-    
-//     return (
-//     <View>
-//         <FlatList data={products} keyExtractor={(item) => item.id}
-//         renderItem={
-//             ({ item }) => (
-//             <Product name={item.name} expiryDate={item.expiryDate} onDelete={() => handleDelete(item.id)}/>
-//         )}
-//         />
-//     </View>
-//     );
-// };
-    // const [foodProducts, setFoodProducts] = useState([
-    //     { key: '1', name: 'Banana' },
-    //     { key: '2', name: 'Apple' },
-    //     { key: '3', name: 'Orange' },
-    //     { key: '4', name: 'Mango' },
-    //     { key: '5', name: 'Pineapple' },
-    //     { key: '6', name: 'Banana' },
-    //     { key: '7', name: 'Apple' },
-    //     { key: '8', name: 'Orange' },
-    //     { key: '9', name: 'Mango' },
-    //     { key: '10', name: 'Pineapple' },
-    //     { key: '11', name: 'Banana' },
-    //     { key: '12', name: 'Apple' },
-    //     { key: '13', name: 'Orange' },
-    //     { key: '14', name: 'Mango' },
-    //     { key: '15', name: 'Pineapple' },
-    // ]);
-    // return (
-    // <SafeAreaView style={styles.container}>
-    //     <FlatList 
-    //     data={foodProducts}
-    //     renderItem={({ item }) => ProductDetail(item)}
-    //     keyExtractor={(item) => item.key}
-    //     contentContainerStyle={styles.listContainer}/>
-    //     </SafeAreaView>
-    //   );};
 
     
 
@@ -206,7 +135,6 @@ const FloatingScan = () => {
     return (
     <TouchableOpacity style={{
         borderWidth: 8,
-        //borderColor: 'black',
         alignItems: 'flex-end',
         justifyContent: 'space-evenly',
         width: 60,
@@ -216,12 +144,7 @@ const FloatingScan = () => {
         height: 60,
         backgroundColor: 'black',
         borderRadius: 50,
-        //shadowColor: 'black', // IOS
-        //shadowOffset: { height: 1, width: 1 }, // IOS
-        //shadowOpacity: 1, // IOS
-        //shadowRadius: 70, //IOS
         elevation: 10
-        //zIndex: 999,
         }}
         onPressIn={handlePress}>
             <ImageBackground 
@@ -243,11 +166,6 @@ export default function ProductsListScreen() {
                 <Tab.Screen name="Refrigerator" component={Refrigerator}/>
                 <Tab.Screen 
                 options={{
-                    // tabBarLabel: 'Freezer',
-                    // //tabBarLabelStyle: {width:40, fontSize:12},
-                    // tabBarItemStyle: { width: 50 }, 
-                    // //tabBarIconStyle: { marginRight: '60%', width: 60 },
-                    // //tabBarIndicatorStyle: { width: 50 }
                 }}
                 name="Freezer" component={Freezer}/>
                 {/* <FloatingScan actions={scanning} onPressItem={name => {console.log(`selected button: ${name}`);}}/> */}
