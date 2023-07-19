@@ -11,6 +11,7 @@ import Product from '../../components/product';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import db_req from '../../../DB_requests/request';
 import scan_req from '../../../DB_requests/scan_req';
+import ProductImgSearch from './img_search';
 
 const styles = StyleSheet.create({
     container: {
@@ -53,21 +54,35 @@ function Refrigerator() {
         const productsArray = []
         currentId = 1
         for (const p of productsOfUser){
-            
             currentProduct = await db_req("products", "barcodes", "get", { ItemCode: { _text: p.barcode } });
+            console.log("currentProduct:"+currentProduct)
+            productImage = await db_req("products", "images", "get", { barcode: p.barcode });
+            console.log("productImage:"+productImage)
             if (currentProduct.length > 0){
                 //console.log(currentProduct)
                 nameOfProduct = currentProduct[0].ManufacturerItemDescription._text
+                if (productImage.length > 0){
+                    img = productImage[0].image
+                    console.log("img" + img)
+                } else {
+                    await ProductImgSearch(p.barcode);
+                    productImage = await db_req("products", "images", "get", { barcode: p.barcode });
+                    console.log("newly uploaded productImage:"+productImage)
+                    img = productImage[0].image
+                    console.log("newly added img" + img)
+                }
                 productsArray.push({
                     id: currentId,
                     name: nameOfProduct,
                     expiryDate: p.exp_date,
                     location: p.location,
                     amount: p.amount,
-                    unit: p.unit
+                    unit: p.unit,
+                    image: img
                 });
-                currentId = currentId + 1;
+                
             }
+            currentId = currentId + 1;
             
         }
         setProducts(productsArray);
@@ -88,7 +103,9 @@ function Refrigerator() {
         <FlatList data={products} keyExtractor={(item) => item.id}
         renderItem={
             ({ item }) => (
-            <Product name={item.name} expiryDate={item.expiryDate} onDelete={() => handleDelete(item.id)}/>
+            <Product name={item.name} expiryDate={item.expiryDate} location={null} amount1={null} unit={null}
+            image={item.image} onAdd={null} onDecline={null} changeLoc={null} changeDate={null} changeUnit={null}
+            onDelete={() => handleDelete(item.id)}/>
         )}
         />
     </View>

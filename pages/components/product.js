@@ -2,11 +2,13 @@ import * as React from 'react'
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import {Image ,StyleSheet, Text, View,TouchableOpacity} from 'react-native';
+import db_req from '../../DB_requests/request';
 
-const Product = ({ name, expiryDate, onDelete })=>{
+const Product = ({ name, expiryDate, location, amount1, unit, image, onAdd, onDecline, changeLoc, changeDate, changeUnit, onDelete })=>{
     const [amount, setAmount] = useState(0);
     //const img = require('./../../assets/tomato.jpg'); // need to be evantually the "item.image"
-    const img = require('./../../assets/product692_model0_image0_2021-12-29_11-59-09.jpg');
+    const img = image
+    
     
     const handleIncrement = () => {
         setAmount(amount + 1);
@@ -28,7 +30,7 @@ const Product = ({ name, expiryDate, onDelete })=>{
     return (
     <View style={styles.container}>
         <View style={styles.item}>
-            <Image style={styles.productTinyImage} source={img}/>
+            <Image style={styles.productTinyImage} src={img}/>
             <View style={styles.leftContainer}>
 
                 <Text style={styles.name}>{name}</Text>
