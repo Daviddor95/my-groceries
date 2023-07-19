@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Text, View, StyleSheet, Pressable } from 'react-native';
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, useIsFocused } from "@react-navigation/native";
 import { useState, useEffect, useRef } from 'react';
 import { Camera } from 'expo-camera';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -15,9 +15,11 @@ export default function DateScanScreen() {
     const [date, setDate] = useState(new Date());
     const [show, setShow] = useState(false);
     const navigation = useNavigation();
+    const isFocused = useIsFocused();
     const route = useRoute();
     const camRef = useRef(null);
     const product_barcode = "" + route.params?.barcode;
+    const interval = 8000;
     var continiousScan;
     var scanned = false;
     var dateStr = '';
@@ -65,7 +67,7 @@ export default function DateScanScreen() {
             dateStr = new Date(selectedDate).toLocaleDateString("en-GB");
             navigation.push('Add product', { prod_barcode: product_barcode, expDate: dateStr });
         } else {
-            continiousScan = setInterval(async function() { await scan() } , 8000);
+            continiousScan = setInterval(async function() { await scan() } , interval);
         }
     };
 
@@ -80,7 +82,7 @@ export default function DateScanScreen() {
         var res = await scan_req(b64img);
         if (res && res.dateFound && !scanned) {
             dateStr = new Date(res.date).toLocaleDateString("en-GB");
-            setDate(res.date);
+            setDate(new Date(res.date));
             scanned = true;
             clearInterval(continiousScan);
             navigation.push('Add product', { prod_barcode: product_barcode, expDate: dateStr });
@@ -98,16 +100,16 @@ export default function DateScanScreen() {
 
     const onCameraReady = async () => {
         if (camRef && (await camRef.current)) {
-            continiousScan = setInterval(async function() { await scan() } , 8000);
+            continiousScan = setInterval(async function() { await scan() } , interval);
         }
     }
 
     return (
         <View style={styles.container}>
-            <Text style={styles.details}>Product: {productInfo.length > 0 ? productInfo[0].manufacturer : "Not found"}, barcode: {route.params?.barcode}</Text>
+            <Text style={styles.details}>Product: {productInfo.length > 0 ? productInfo[0].manufacturer : "Loading..."}, barcode: {route.params?.barcode}</Text>
             <Text style={styles.instruction}>Please point the camera to the product's expiration date</Text>
             <View style={styles.scanner}>
-                <Camera ref={camRef} onCameraReady={onCameraReady} style={styles.camera}></Camera>
+                {isFocused ? (<Camera ref={camRef} onCameraReady={onCameraReady} style={styles.camera}></Camera>) : null }
                 <Pressable style={styles.button} onPress={showDatePicker}>
                     <Text style={styles.buttonText}>Or click here to enter the expiration date manually</Text>
                 </Pressable>
