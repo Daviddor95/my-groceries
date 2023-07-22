@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useState, useEffect } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { Animated, Image ,ImageBackground, StyleSheet, Text, View, Button, FlatList, SafeAreaView,TouchableOpacity,Dimensions, ScrollView} from 'react-native';
-import { useNavigation, NavigationContainer } from '@react-navigation/native';
+import { useNavigation,useRoute, NavigationContainer } from '@react-navigation/native';
 //import { createStackNavigator } from '@react-navigation/stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 // import { FloatingAction } from "react-native-floating-action";
@@ -42,49 +42,19 @@ const styles = StyleSheet.create({
     //     height: 75,
     // },
 });
-//const navigation = useNavigation();
-function Refrigerator() {
-    const [products, setProducts] = useState([]);
-    const [databaseUpdated, setDatabaseUpdated] = useState(false);
-    const isFocused = useIsFocused();
-    async function productsListCreate() {
-        const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
-        //const productsOfUser = usersDb.product
-        const productsOfUser = usersDb[0].product
-        const productsArray = []
-        currentId = 1
-        for (const p of productsOfUser){
-            currentProduct = await db_req("products", "barcodes", "get", { ItemCode: { _text: p.barcode } });
-            productImage = await db_req("products", "images", "get", { barcode: p.barcode });
-            if (currentProduct.length > 0){
-                nameOfProduct = currentProduct[0].ManufacturerItemDescription._text
-                if (productImage.length > 0){
-                    img = productImage[0].image
-                } else {
-                    await ProductImgSearch(p.barcode);
-                    productImage = await db_req("products", "images", "get", { barcode: p.barcode });
-                    img = productImage[0].image
-                }
-                productsArray.push({
-                    id: currentId,
-                    name: nameOfProduct,
-                    expiryDate: p.exp_date,
-                    location: p.location,
-                    amount: p.amount,
-                    unit: p.unit,
-                    image: img
-                });
-                
-            }
-            currentId = currentId + 1;
-            
-        }
-        setProducts(productsArray);
+
+function areArraysEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+  
+    for (let i = 0; i < arr1.length; i++) {
+      // Implement your own comparison logic here
+      if (arr1[i] !== arr2[i]) return false;
     }
-    useEffect(() => {
-        productsListCreate();
-    }, [isFocused]);
-    
+  
+    return true;
+  }
+//const navigation = useNavigation();
+function Refrigerator({products, setProducts}) {
     const handleDelete = (productId) => {
         setProducts(products.filter((item) => item.id !== productId));
     };
@@ -124,12 +94,50 @@ function KitchenCabinet() {
 
 
 
-const FloatingScan = () => {
+const FloatingScan = ({products, setProducts, productAdded, setProductAdded}) => {
     const actions = [{text: 'Scan',name: 'scanFunc'}];
     const navigation = useNavigation();
-    const handlePress = () => {
-        navigation.navigate('Barcode scan');
-        
+    const route = useRoute();
+    const scanning= async() => {
+        navigation.navigate('Barcode scan', { u_id: route.params?.u_id });
+    };
+    const handlePress = async() => {
+        await scanning();
+        setProductAdded(true)
+        // const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+        // //const productsOfUser = usersDb.product
+        // const allProd = usersDb[0].product
+        // const addedProduct = allProd[allProd.length-1]
+        // console.log(addedProduct)
+        // console.log(addedProduct.barcode)
+        // productImage = await db_req("products", "images", "get", { barcode: addedProduct.barcode })
+        // console.log("imglen"+productImage.length)
+        // const pr = await db_req("products", "barcodes", "get", { "ItemCode._text": addedProduct.barcode})
+        // console.log(pr)
+        // const nameOfProduct = pr[0].ManufacturerItemDescription._text
+        // console.log(nameOfProduct)
+        // img = null
+        // if (productImage == undefined){
+        //     console.log("fgfdhgf")
+        //     productImage = await ProductImgSearch(addedProduct.barcode)
+        //     console.log("hfgjhfhhhhhhhh"+productImage.length)
+        //     img = productImage
+        // }else{
+        //     img = productImage.image
+        // }
+        // console.log("here")
+
+        // setProducts((prevProducts) => [prevProducts,
+        //     {
+        //         id: products.length+1,
+        //         name: nameOfProduct,
+        //         expiryDate: addedProduct.exp_date,
+        //         location: addedProduct.location,
+        //         amount: addedProduct.amount,
+        //         unit: addedProduct.unit,
+        //         image: img
+        //     }
+        // ]);
     };
   
     return (
@@ -157,20 +165,128 @@ const FloatingScan = () => {
   
 const Tab = createMaterialTopTabNavigator();
 export default function ProductsListScreen() {
+    const [products, setProducts] = useState([]);
+    const [productAdded, setProductAdded] = useState(false);
+    const [productDeleted, setProductDeleted] = useState(false);
+    const isFocused = useIsFocused();
+    
     const scanning = {text: "Scan"};
     //icon: require("./images/ic_accessibility_white.png"),
+    useEffect(() => {
+        async function create(){
+            if(products.length == 0){
+                await productsListCreate();
+            }
+        }
+        create();
+
+        async function addProd(){
+            if(productAdded){
+                const usersDb = await getUser("1");
+                //const productsOfUser = usersDb.product
+                const productsOfUser = usersDb[0].product;
+                const lastProduct = productsOfUser[productsOfUser.length - 1];
+                const currentProduct = await db_req("products", "barcodes", "get", { "ItemCode._text": lastProduct.barcode});
+                //console.log(currentProduct)
+                //console.log(currentProduct[0][0])
+                const nameOfProduct = currentProduct[0].ManufacturerItemDescription._text;
+                const currentImage = await getImageOfBarcode(lastProduct.barcode);
+                // console.log(currentImage)
+                // console.log(currentImage[0])
+                let img = null;
+                if(currentImage.length>0){
+                    img = currentImage[0].image;
+                } else {
+                    productImage = await ProductImgSearch(currentProduct[0].ItemCode._text)
+                    img = productImage
+                }
+                
+
+                products.push({
+                    id: products.length+1,
+                    name: nameOfProduct,
+                    expiryDate: lastProduct.exp_date,
+                    location: lastProduct.location,
+                    amount: lastProduct.amount,
+                    unit: lastProduct.unit,
+                    image: img
+                })
+                setProductAdded(false)
+            }
+        }
+        addProd();
+        
+    }, [isFocused]);
+    async function getUser(uId){
+        const usersDb = await db_req("users", "regular_users", "get", {u_id:uId });
+        return usersDb;
+    }
+    async function getImageOfBarcode(barc){
+        const suitableImage = await db_req("products", "images", "get", { barcode: barc })
+        return suitableImage;
+    }
+
+    async function productsListCreate() {
+        usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+        const productsOfUser = usersDb[0].product
+        const productsArray = []
+        currentId = 1
+
+        const barcodesArray = []
+        for (const prod of productsOfUser){
+            barcodesArray.push(prod.barcode)
+        }
+
+        const usersProducts = await db_req("products", "barcodes", "get", { "ItemCode._text":  { $in: barcodesArray }  })
+        const suitableImages = await db_req("products", "images", "get", { barcode: { $in: barcodesArray } })
+        
+        for (const pr of productsOfUser){
+            const p = usersProducts.find((element)=> (element.ItemCode._text == pr.barcode));
+            if(p!= undefined){
+                const nameOfProduct = p.ManufacturerItemDescription._text;
+                let productImage = suitableImages.find((element)=> (element.barcode == p.ItemCode._text));
+                img = null
+
+                if (productImage == undefined){
+                    productImage = await getImageOfBarcode(p.ItemCode._text)
+                    if(productImage.length==0){
+                        productImage = await ProductImgSearch(p.ItemCode._text)
+                        img = productImage
+                    }else{
+                        img = productImage[0].image
+                    }
+                    
+                }else{
+                    img = productImage.image
+                }
+                
+                
+                productsArray.push({
+                    id: currentId,
+                    name: nameOfProduct,
+                    expiryDate: pr.exp_date,
+                    location: pr.location,
+                    amount: pr.amount,
+                    unit: pr.unit,
+                    image: img
+                });
+                currentId = currentId + 1;
+            }
+        }
+        setProducts(productsArray);
+    }
+    
     return (
         <View style={{ flex: 1,width: Dimensions.get('window').width }}>
             <Tab.Navigator>
                 <Tab.Screen name="cupboard" component={KitchenCabinet}/>
-                <Tab.Screen name="Refrigerator" component={Refrigerator}/>
-                <Tab.Screen 
-                options={{
-                }}
-                name="Freezer" component={Freezer}/>
+                <Tab.Screen name="Refrigerator" >
+                {() => <Refrigerator products={products} setProducts={setProducts} />}
+                </Tab.Screen>
+                <Tab.Screen options={{}} name="Freezer" component={Freezer}/>
                 {/* <FloatingScan actions={scanning} onPressItem={name => {console.log(`selected button: ${name}`);}}/> */}
             </Tab.Navigator>
-            <FloatingScan />
+            <FloatingScan products={products} setProducts={setProducts} productAdded = {productAdded} setProductAdded = {setProductAdded}/>
         </View>
     );
 }
