@@ -193,7 +193,14 @@ export default function ProductsListScreen() {
                 const currentImage = await getImageOfBarcode(lastProduct.barcode);
                 // console.log(currentImage)
                 // console.log(currentImage[0])
-                const img = currentImage[0].image;
+                let img = null;
+                if(currentImage.length>0){
+                    img = currentImage[0].image;
+                } else {
+                    productImage = await ProductImgSearch(currentProduct[0].ItemCode._text)
+                    img = productImage
+                }
+                
 
                 products.push({
                     id: products.length+1,

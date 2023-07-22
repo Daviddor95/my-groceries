@@ -21,7 +21,8 @@ WebBrowser.maybeCompleteAuthSession();
 const Drawer = createDrawerNavigator();
 const clientId = '7qhntrjqsufkivi2h730p2egef';
 const userPoolUrl = 'https://mygroceries0292444e-0292444e-dev.auth.us-east-1.amazoncognito.com';
-const redirectUri = 'exp://192.168.68.100:8081/--/products/';
+//const redirectUri = 'exp://192.168.68.100:8081/--/products/';//David's
+const redirectUri = 'exp://pe8r9jq.ellakha.8081.exp.direct/--/products/';//Ella's
 
 
 export default function App() {
