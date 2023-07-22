@@ -1,36 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Pressable, BackHandler } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { useNavigation, useIsFocused, setState } from '@react-navigation/native';
-// import * as Linking from 'expo-linking';
+import { useNavigation, useIsFocused, useRoute } from '@react-navigation/native';
+
 
 export default function BarcodeScanScreen() {
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
     const navigation = useNavigation();
     const isFocused = useIsFocused();
+	const route = useRoute();
 	var pushed = false;
-
-	// var redirect = Linking.makeUrl('products/barcode_scan');
-
-	// handleUrl = (url) => {
-	// 	setState({ url });
-	// 	var { path, params } = Linking.parse(url);
-	// 	console.log(`Linked to app with path: ${path} and data: ${JSON.stringify(params)}`);
-	// };
-
-	// function redirectUrl(url) {
-	// 	if (!url) {
-	// 		return;
-	// 	}
-	// 	let { path, params } = Linking.parse(url);
-	// 	console.log(`Linked to app with path: ${path} and data: ${JSON.stringify(params)}`);
-	// 	navigation.replace(path, params);
-	// }
-	
-	// Linking.addEventListener('url', (e) => {
-	// 	redirectUrl(e.url);
-	// });
 
     useEffect(() => {
 		const getPermissions = async () => {
@@ -38,13 +18,12 @@ export default function BarcodeScanScreen() {
         	setHasPermission(status === 'granted');
     	};
     	getPermissions();
-		// Linking.getInitialURL().then(redirectUrl);
     }, []);
 
     const handleBarCode = async ({ type, data }) => {
 		setScanned(true);
 		if (!pushed) {
-			navigation.push('Date scan', { barcode: data, kind: type });
+			navigation.push('Date scan', { barcode: data, kind: type, u_id: route.params?.u_id });
 			pushed = true;
 		}
     };
@@ -72,7 +51,9 @@ export default function BarcodeScanScreen() {
         		{isFocused ? (<BarCodeScanner onBarCodeScanned={scanned ? undefined : handleBarCode}
             			style={StyleSheet.absoluteFillObject}/>) : null }
         		{ scanned && setScanned(false) }
-        		<Pressable style={styles.button} onPress={() => { navigation.push('Add manually'); }}>
+        		<Pressable style={styles.button} onPress={() => {
+														navigation.push('Add manually', { u_id: route.params?.u_id });
+													}}>
             		<Text style={styles.instruction2}>Or click here to add the product manually</Text>
         		</Pressable>
         	</View>

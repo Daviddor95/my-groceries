@@ -65,7 +65,11 @@ export default function DateScanScreen() {
             scanned = true;
             setDate(new Date(selectedDate));
             dateStr = new Date(selectedDate).toLocaleDateString("en-GB");
-            navigation.push('Add product', { prod_barcode: product_barcode, expDate: dateStr });
+            navigation.push('Add product', {
+                                                prod_barcode: product_barcode,
+                                                expDate: dateStr,
+                                                u_id: route.params?.u_id
+                                            });
         } else {
             continiousScan = setInterval(async function() { await scan() } , interval);
         }
@@ -85,7 +89,11 @@ export default function DateScanScreen() {
             setDate(new Date(res.date));
             scanned = true;
             clearInterval(continiousScan);
-            navigation.push('Add product', { prod_barcode: product_barcode, expDate: dateStr });
+            navigation.push('Add product', {
+                                            prod_barcode: product_barcode,
+                                            expDate: dateStr,
+                                            u_id: route.params?.u_id
+                                            });
         }
     };
 
@@ -94,7 +102,9 @@ export default function DateScanScreen() {
             clearInterval(continiousScan);
         } else if (camRef && (await camRef.current) && !scanned) {
             console.log("scanning...");
-            ((await camRef.current).takePictureAsync({ exif: true, base64: true, skipProcessing: false })).then(async (uri, width, height, exif, base64) => await onPicture(uri, width, height, exif, base64)).catch(err => console.log(err));
+            ((await camRef.current).takePictureAsync({ exif: true, base64: true, skipProcessing: false }))
+                .then(async (uri, width, height, exif, base64) => await onPicture(uri, width, height, exif, base64))
+                .catch(err => console.log(err));
         }
     };
 
@@ -106,10 +116,14 @@ export default function DateScanScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.details}>Product: {productInfo.length > 0 ? productInfo[0].manufacturer : "Loading..."}, barcode: {route.params?.barcode}</Text>
+            <Text style={styles.details}>
+                Product: {productInfo.length > 0 ? productInfo[0].manufacturer : "Loading..."}, barcode: {route.params?.barcode}
+            </Text>
             <Text style={styles.instruction}>Please point the camera to the product's expiration date</Text>
             <View style={styles.scanner}>
-                {isFocused ? (<Camera ref={camRef} onCameraReady={onCameraReady} style={styles.camera}></Camera>) : null }
+                {isFocused ? (
+                    <Camera ref={camRef} onCameraReady={onCameraReady} style={styles.camera}></Camera>
+                ) : null }
                 <Pressable style={styles.button} onPress={showDatePicker}>
                     <Text style={styles.buttonText}>Or click here to enter the expiration date manually</Text>
                 </Pressable>
@@ -168,4 +182,3 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 });
-
