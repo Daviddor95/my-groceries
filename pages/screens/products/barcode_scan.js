@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Pressable, BackHandler } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { useNavigation, useIsFocused, setState } from '@react-navigation/native';
+// import * as Linking from 'expo-linking';
 
 export default function BarcodeScanScreen() {
     const [hasPermission, setHasPermission] = useState(null);
@@ -10,12 +11,34 @@ export default function BarcodeScanScreen() {
     const isFocused = useIsFocused();
 	var pushed = false;
 
+	// var redirect = Linking.makeUrl('products/barcode_scan');
+
+	// handleUrl = (url) => {
+	// 	setState({ url });
+	// 	var { path, params } = Linking.parse(url);
+	// 	console.log(`Linked to app with path: ${path} and data: ${JSON.stringify(params)}`);
+	// };
+
+	// function redirectUrl(url) {
+	// 	if (!url) {
+	// 		return;
+	// 	}
+	// 	let { path, params } = Linking.parse(url);
+	// 	console.log(`Linked to app with path: ${path} and data: ${JSON.stringify(params)}`);
+	// 	navigation.replace(path, params);
+	// }
+	
+	// Linking.addEventListener('url', (e) => {
+	// 	redirectUrl(e.url);
+	// });
+
     useEffect(() => {
 		const getPermissions = async () => {
         	const { status } = await BarCodeScanner.requestPermissionsAsync();
         	setHasPermission(status === 'granted');
     	};
     	getPermissions();
+		// Linking.getInitialURL().then(redirectUrl);
     }, []);
 
     const handleBarCode = async ({ type, data }) => {

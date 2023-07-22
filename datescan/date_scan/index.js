@@ -1,7 +1,7 @@
 module.exports = async function (context, req) {
     const Buffer = require('buffer/').Buffer;
     const key = process.env.AZURE_KEY;
-    const endpoint = process.env.Azure_ENDPOINT + "computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read&language=en&gender-neutral-caption=False";   // "vision/v3.2/read/analyze?language=en&readingOrder=natural&model-version=latest";
+    const endpoint = process.env.Azure_ENDPOINT + "computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read&language=en&gender-neutral-caption=False";
     try {
         const binaryImage = Buffer.from(req.body.img_b64.replace('data:image/jpeg;base64,', ''), 'base64');
         await fetch(endpoint, {

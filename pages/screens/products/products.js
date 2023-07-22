@@ -12,19 +12,19 @@ const Stack = createStackNavigator();
 
 function ProductsStack() {
     return (
-      <Stack.Navigator>
-        <Stack.Screen name="Products List" component={ProductsListScreen} />
-        <Stack.Screen name="Barcode scan" component={BarcodeScanScreen} />
-        <Stack.Screen name="Add manually" component={AddManual} />
-        <Stack.Screen name="Date scan" component={DateScanScreen} />
-        <Stack.Screen name="Add product" component={AddProduct} />
-      </Stack.Navigator>
+    	<Stack.Navigator>
+    		<Stack.Screen name="Products List" component={ProductsListScreen} />
+        	<Stack.Screen name="Barcode scan" component={BarcodeScanScreen} />
+	        <Stack.Screen name="Add manually" component={AddManual} />
+    	    <Stack.Screen name="Date scan" component={DateScanScreen} />
+        	<Stack.Screen name="Add product" component={AddProduct} />
+    	</Stack.Navigator>
     );
-  }
+}
 
 
 export default function ProductsScreen() {
     return (
-          <ProductsStack />
+        <ProductsStack />
     )
 }
