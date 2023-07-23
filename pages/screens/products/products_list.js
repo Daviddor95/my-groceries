@@ -40,20 +40,11 @@ const styles = StyleSheet.create({
     // },
 });
 
-function areArraysEqual(arr1, arr2) {
-    if (arr1.length !== arr2.length) return false;
-  
-    for (let i = 0; i < arr1.length; i++) {
-      // Implement your own comparison logic here
-      if (arr1[i] !== arr2[i]) return false;
-    }
-  
-    return true;
-  }
+
 //const navigation = useNavigation();
-function Refrigerator({products, setProducts}) {
+function Refrigerator({products, setProducts, productAdded}) {
     const handleDelete = async(productId) => {
-        const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+        const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
         const ps = usersDb[0].product
         const elementToFind = products.find(item => item.id === productId)
         setProducts(products.filter((item) => item.id !== productId));
@@ -67,24 +58,36 @@ function Refrigerator({products, setProducts}) {
             );
         });
         const updatedProductArray = ps.filter((_, index) => index !== foundElement);
-        await db_req("users", "regular_users", "update",{query:{ u_id: "1" }, update:{ $set: { product: updatedProductArray } }});
+        await db_req("users", "regular_users", "update",{query:{ u_id: global.user_details.sub }, update:{ $set: { product: updatedProductArray } }});
     };
 
     const handleAdd = async(productId) => {
         const elementToFind = products.find(item => item.id === productId)
         
-        const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+        const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
         const ps = usersDb[0].product
-        const foundElement = ps.findIndex((item) => {return (
-            item.barcode === elementToFind.barcode &&
-            item.exp_date === elementToFind.expiryDate &&
-            item.location === elementToFind.location &&
-            item.amount === elementToFind.amount &&
-            item.unit === elementToFind.unit
-            );
-        });
+        if(!((/^[0-9]+$/).test(elementToFind.barcode))){
+            foundElement = ps.findIndex((item) => {return (
+                item.name === elementToFind.name &&
+                item.exp_date === elementToFind.expiryDate &&
+                item.location === elementToFind.location &&
+                item.amount === elementToFind.amount &&
+                item.unit === elementToFind.unit
+                );
+            });
+        }else{
+            foundElement = ps.findIndex((item) => {return (
+                item.barcode === elementToFind.barcode &&
+                item.exp_date === elementToFind.expiryDate &&
+                item.location === elementToFind.location &&
+                item.amount === elementToFind.amount &&
+                item.unit === elementToFind.unit
+                );
+            });
+        }
+        
         (ps[foundElement]).amount = (parseInt((ps[foundElement]).amount) + 1).toString();
-        await db_req("users", "regular_users", "update",{query:{ u_id: "1" }, update:{ $set: { product: ps } }});
+        await db_req("users", "regular_users", "update",{query:{ u_id: global.user_details.sub }, update:{ $set: { product: ps } }});
         const index = products.findIndex(item => item.id === productId);
         (products[index]).amount = (parseInt((products[index]).amount) +1).toString();
         
@@ -93,18 +96,31 @@ function Refrigerator({products, setProducts}) {
     const handleDecline = async(productId) => {
         const elementToFind = products.find(item => item.id === productId)
         if(parseInt(elementToFind.amount)>1){
-            const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+            const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
             const ps = usersDb[0].product
-            const foundElement = ps.findIndex((item) => {return (
-                item.barcode === elementToFind.barcode &&
-                item.exp_date === elementToFind.expiryDate &&
-                item.location === elementToFind.location &&
-                item.amount === elementToFind.amount &&
-                item.unit === elementToFind.unit
-                );
-            });
+            if(!((/^[0-9]+$/).test(elementToFind.barcode))){
+                console.log("here")
+                foundElement = ps.findIndex((item) => {return (
+                    item.name === elementToFind.name &&
+                    item.exp_date === elementToFind.expiryDate &&
+                    item.location === elementToFind.location &&
+                    item.amount === elementToFind.amount &&
+                    item.unit === elementToFind.unit
+                    );
+                });
+            }else{
+                console.log("there")
+                foundElement = ps.findIndex((item) => {return (
+                    item.barcode === elementToFind.barcode &&
+                    item.exp_date === elementToFind.expiryDate &&
+                    item.location === elementToFind.location &&
+                    item.amount === elementToFind.amount &&
+                    item.unit === elementToFind.unit
+                    );
+                });
+            }
             (ps[foundElement]).amount = (parseInt((ps[foundElement]).amount) - 1).toString();
-            await db_req("users", "regular_users", "update",{query:{ u_id: "1" }, update:{ $set: { product: ps } }});
+            await db_req("users", "regular_users", "update",{query:{ u_id: global.user_details.sub }, update:{ $set: { product: ps } }});
             const index = products.findIndex(item => item.id === productId);
             (products[index]).amount = (parseInt((products[index]).amount) -1).toString();
         }
@@ -117,7 +133,7 @@ function Refrigerator({products, setProducts}) {
         renderItem={
             ({ item }) => (
             <Product id={item.id} name={item.name} expiryDate={item.expiryDate} location={item.location} amount1={item.amount} unit={item.unit}
-            image={item.image} onAdd={async() => await handleAdd(item.id)} onDecline={() => handleDecline(item.id)} changeLoc={null} changeDate={null} changeUnit={null}
+            image={item.image} inProcessOfAddingProduct = {productAdded} onAdd={async() => await handleAdd(item.id)} onDecline={() => handleDecline(item.id)} changeLoc={null} changeDate={null} changeUnit={null}
             onDelete={() => handleDelete(item.id)}/>
         )}
         />
@@ -150,11 +166,20 @@ const FloatingScan = ({products, setProducts, productAdded, setProductAdded}) =>
     const actions = [{text: 'Scan',name: 'scanFunc'}];
     const navigation = useNavigation();
     const scanning= async() => {
-        navigation.navigate('Barcode scan');
+        const passData = (isScanned) => {
+            setState({ isScanned: isScanned});
+        }
+        navigation.navigate('Barcode scan', { passData: passData.bind() });
     };
     const handlePress = async() => {
         await scanning();
-        setProductAdded(true)
+        const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
+        const productsOfUser = usersDb[0].product;
+        const lastProduct = productsOfUser[productsOfUser.length - 1];
+        const BeforeLastProduct = productsOfUser[productsOfUser.length - 2];
+        if(lastProduct.name != BeforeLastProduct.name){
+            setProductAdded(true)
+        }
         
     };
   
@@ -200,7 +225,7 @@ export default function ProductsListScreen() {
 
         async function addProd(){
             if(productAdded){
-                const usersDb = await getUser("1");
+                const usersDb = await getUser();
                 //const productsOfUser = usersDb.product
                 const productsOfUser = usersDb[0].product;
                 const lastProduct = productsOfUser[productsOfUser.length - 1];
@@ -242,8 +267,8 @@ export default function ProductsListScreen() {
         addProd();
         
     }, [isFocused]);
-    async function getUser(uId){
-        const usersDb = await db_req("users", "regular_users", "get", {u_id:uId });
+    async function getUser(){
+        const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
         return usersDb;
     }
     async function getImageOfBarcode(barc){
@@ -252,7 +277,7 @@ export default function ProductsListScreen() {
     }
 
     async function productsListCreate() {
-        usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+        usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
         const productsOfUser = usersDb[0].product
         const productsArray = []
         currentId = 1
@@ -343,7 +368,7 @@ export default function ProductsListScreen() {
             <Tab.Navigator>
                 <Tab.Screen name="cupboard" component={KitchenCabinet}/>
                 <Tab.Screen name="Refrigerator" >
-                {() => <Refrigerator products={products} setProducts={setProducts} />}
+                {() => <Refrigerator products={products} setProducts={setProducts} productAdded = {productAdded} setProductAdded = {setProductAdded}/>}
                 </Tab.Screen>
                 <Tab.Screen options={{}} name="Freezer" component={Freezer}/>
                 {/* <FloatingScan actions={scanning} onPressItem={name => {console.log(`selected button: ${name}`);}}/> */}

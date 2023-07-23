@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import {Image ,StyleSheet, Text, View,TouchableOpacity} from 'react-native';
 
-const Product = ({id, name, expiryDate, location, amount1, unit, image, onAdd, onDecline, changeLoc, changeDate, changeUnit, onDelete })=>{
+const Product = ({id, name, expiryDate, location, amount1, unit, image,inProcessOfAddingProduct, onAdd, onDecline, changeLoc, changeDate, changeUnit, onDelete })=>{
     const [amount, setAmount] = useState(parseInt(amount1));
     const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
     const [isDeclineButtonDisabled, setIsDeclineButtonDisabled] = useState(false);
@@ -44,13 +44,13 @@ const Product = ({id, name, expiryDate, location, amount1, unit, image, onAdd, o
 
                 <View style={styles.amountContainer}>
 
-                    <TouchableOpacity onPress={handleDecrement} disabled={isDeclineButtonDisabled}>
+                    <TouchableOpacity onPress={handleDecrement} disabled={isDeclineButtonDisabled && !inProcessOfAddingProduct}>
                         <Ionicons name="remove-circle-outline" size={24} color="black" />
                     </TouchableOpacity>
 
                     <Text style={styles.amount}>{amount}</Text>
 
-                    <TouchableOpacity onPress={handleIncrement} disabled={isAddButtonDisabled}>
+                    <TouchableOpacity onPress={handleIncrement} disabled={isAddButtonDisabled && !inProcessOfAddingProduct}>
                         <Ionicons name="add-circle-outline" size={24} color="black" />
                     </TouchableOpacity>
 
