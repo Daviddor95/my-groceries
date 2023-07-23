@@ -2,28 +2,35 @@ import * as React from 'react'
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import {Image ,StyleSheet, Text, View,TouchableOpacity} from 'react-native';
-import db_req from '../../requests/db_req';
 
-const Product = ({ name, expiryDate, location, amount1, unit, image, onAdd, onDecline, changeLoc, changeDate, changeUnit, onDelete })=>{
-    const [amount, setAmount] = useState(0);
+const Product = ({id, name, expiryDate, location, amount1, unit, image, onAdd, onDecline, changeLoc, changeDate, changeUnit, onDelete })=>{
+    const [amount, setAmount] = useState(parseInt(amount1));
+    const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+    const [isDeclineButtonDisabled, setIsDeclineButtonDisabled] = useState(false);
     //const img = require('./../../assets/tomato.jpg'); // need to be evantually the "item.image"
     const img = image
     
     
-    const handleIncrement = () => {
+    const handleIncrement = async() => {
+        setIsAddButtonDisabled(true);
         setAmount(amount + 1);
+        await onAdd();
+        setIsAddButtonDisabled(false);
         //another line needs to be added for updating the database of the user
     };
   
-    const handleDecrement = () => {
-        if (amount > 0) {
+    const handleDecrement = async() => {
+        if (amount > 1) {
             //another line needs to be added for updating the database of the user
+            setIsDeclineButtonDisabled(true);
             setAmount(amount - 1);
+            await onDecline();
+            setIsDeclineButtonDisabled(false);
         }
     };
   
-    const handleDelete = () => {
-        onDelete();
+    const handleDelete = async () => {
+        await onDelete();
         //another line needs to be added for updating the database of the user
     };
   
@@ -37,13 +44,13 @@ const Product = ({ name, expiryDate, location, amount1, unit, image, onAdd, onDe
 
                 <View style={styles.amountContainer}>
 
-                    <TouchableOpacity onPress={handleDecrement}>
+                    <TouchableOpacity onPress={handleDecrement} disabled={isDeclineButtonDisabled}>
                         <Ionicons name="remove-circle-outline" size={24} color="black" />
                     </TouchableOpacity>
 
                     <Text style={styles.amount}>{amount}</Text>
 
-                    <TouchableOpacity onPress={handleIncrement}>
+                    <TouchableOpacity onPress={handleIncrement} disabled={isAddButtonDisabled}>
                         <Ionicons name="add-circle-outline" size={24} color="black" />
                     </TouchableOpacity>
 

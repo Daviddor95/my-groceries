@@ -1,12 +1,9 @@
 import * as React from 'react'
 import { useState, useEffect } from 'react';
 import { useIsFocused } from '@react-navigation/native';
-import { Animated, Image ,ImageBackground, StyleSheet, Text, View, Button, FlatList, SafeAreaView,TouchableOpacity,Dimensions, ScrollView} from 'react-native';
-import { useNavigation,useRoute, NavigationContainer } from '@react-navigation/native';
-//import { createStackNavigator } from '@react-navigation/stack';
+import { ImageBackground, StyleSheet, Text, View, Button, FlatList, SafeAreaView,TouchableOpacity,Dimensions, ScrollView} from 'react-native';
+import { useNavigation} from '@react-navigation/native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-// import { FloatingAction } from "react-native-floating-action";
-import { AntDesign } from '@expo/vector-icons'; // import icons from expo vector icons library
 import Product from '../../components/product';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import db_req from '../../../requests/db_req';
@@ -55,8 +52,63 @@ function areArraysEqual(arr1, arr2) {
   }
 //const navigation = useNavigation();
 function Refrigerator({products, setProducts}) {
-    const handleDelete = (productId) => {
+    const handleDelete = async(productId) => {
+        const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+        const ps = usersDb[0].product
+        const elementToFind = products.find(item => item.id === productId)
         setProducts(products.filter((item) => item.id !== productId));
+
+        const foundElement = ps.findIndex((item) => {return (
+            item.barcode === elementToFind.barcode &&
+            item.exp_date === elementToFind.expiryDate &&
+            item.location === elementToFind.location &&
+            item.amount === elementToFind.amount &&
+            item.unit === elementToFind.unit
+            );
+        });
+        const updatedProductArray = ps.filter((_, index) => index !== foundElement);
+        await db_req("users", "regular_users", "update",{query:{ u_id: "1" }, update:{ $set: { product: updatedProductArray } }});
+    };
+
+    const handleAdd = async(productId) => {
+        const elementToFind = products.find(item => item.id === productId)
+        
+        const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+        const ps = usersDb[0].product
+        const foundElement = ps.findIndex((item) => {return (
+            item.barcode === elementToFind.barcode &&
+            item.exp_date === elementToFind.expiryDate &&
+            item.location === elementToFind.location &&
+            item.amount === elementToFind.amount &&
+            item.unit === elementToFind.unit
+            );
+        });
+        (ps[foundElement]).amount = (parseInt((ps[foundElement]).amount) + 1).toString();
+        await db_req("users", "regular_users", "update",{query:{ u_id: "1" }, update:{ $set: { product: ps } }});
+        const index = products.findIndex(item => item.id === productId);
+        (products[index]).amount = (parseInt((products[index]).amount) +1).toString();
+        
+    };
+
+    const handleDecline = async(productId) => {
+        const elementToFind = products.find(item => item.id === productId)
+        if(parseInt(elementToFind.amount)>1){
+            const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
+            const ps = usersDb[0].product
+            const foundElement = ps.findIndex((item) => {return (
+                item.barcode === elementToFind.barcode &&
+                item.exp_date === elementToFind.expiryDate &&
+                item.location === elementToFind.location &&
+                item.amount === elementToFind.amount &&
+                item.unit === elementToFind.unit
+                );
+            });
+            (ps[foundElement]).amount = (parseInt((ps[foundElement]).amount) - 1).toString();
+            await db_req("users", "regular_users", "update",{query:{ u_id: "1" }, update:{ $set: { product: ps } }});
+            const index = products.findIndex(item => item.id === productId);
+            (products[index]).amount = (parseInt((products[index]).amount) -1).toString();
+        }
+        
     };
     
     return (
@@ -64,8 +116,8 @@ function Refrigerator({products, setProducts}) {
         <FlatList data={products} keyExtractor={(item) => item.id}
         renderItem={
             ({ item }) => (
-            <Product name={item.name} expiryDate={item.expiryDate} location={null} amount1={null} unit={null}
-            image={item.image} onAdd={null} onDecline={null} changeLoc={null} changeDate={null} changeUnit={null}
+            <Product id={item.id} name={item.name} expiryDate={item.expiryDate} location={item.location} amount1={item.amount} unit={item.unit}
+            image={item.image} onAdd={async() => await handleAdd(item.id)} onDecline={() => handleDecline(item.id)} changeLoc={null} changeDate={null} changeUnit={null}
             onDelete={() => handleDelete(item.id)}/>
         )}
         />
@@ -97,47 +149,13 @@ function KitchenCabinet() {
 const FloatingScan = ({products, setProducts, productAdded, setProductAdded}) => {
     const actions = [{text: 'Scan',name: 'scanFunc'}];
     const navigation = useNavigation();
-    const route = useRoute();
     const scanning= async() => {
-        navigation.navigate('Barcode scan', { u_id: route.params?.u_id });
+        navigation.navigate('Barcode scan');
     };
     const handlePress = async() => {
         await scanning();
         setProductAdded(true)
-        // const usersDb = await db_req("users", "regular_users", "get", {u_id:"1" });
-        // //const productsOfUser = usersDb.product
-        // const allProd = usersDb[0].product
-        // const addedProduct = allProd[allProd.length-1]
-        // console.log(addedProduct)
-        // console.log(addedProduct.barcode)
-        // productImage = await db_req("products", "images", "get", { barcode: addedProduct.barcode })
-        // console.log("imglen"+productImage.length)
-        // const pr = await db_req("products", "barcodes", "get", { "ItemCode._text": addedProduct.barcode})
-        // console.log(pr)
-        // const nameOfProduct = pr[0].ManufacturerItemDescription._text
-        // console.log(nameOfProduct)
-        // img = null
-        // if (productImage == undefined){
-        //     console.log("fgfdhgf")
-        //     productImage = await ProductImgSearch(addedProduct.barcode)
-        //     console.log("hfgjhfhhhhhhhh"+productImage.length)
-        //     img = productImage
-        // }else{
-        //     img = productImage.image
-        // }
-        // console.log("here")
-
-        // setProducts((prevProducts) => [prevProducts,
-        //     {
-        //         id: products.length+1,
-        //         name: nameOfProduct,
-        //         expiryDate: addedProduct.exp_date,
-        //         location: addedProduct.location,
-        //         amount: addedProduct.amount,
-        //         unit: addedProduct.unit,
-        //         image: img
-        //     }
-        // ]);
+        
     };
   
     return (
@@ -186,24 +204,31 @@ export default function ProductsListScreen() {
                 //const productsOfUser = usersDb.product
                 const productsOfUser = usersDb[0].product;
                 const lastProduct = productsOfUser[productsOfUser.length - 1];
-                const currentProduct = await db_req("products", "barcodes", "get", { "ItemCode._text": lastProduct.barcode});
-                //console.log(currentProduct)
-                //console.log(currentProduct[0][0])
-                const nameOfProduct = currentProduct[0].ManufacturerItemDescription._text;
-                const currentImage = await getImageOfBarcode(lastProduct.barcode);
+                let barcodeOrName = lastProduct.barcode;
+                if(lastProduct.barcode==""){
+                    barcodeOrName = lastProduct.name;
+                    nameOfProduct = lastProduct.name;
+                }else{
+                    const currentProduct = await db_req("products", "barcodes", "get", { "ItemCode._text": lastProduct.barcode});
+                    nameOfProduct = currentProduct[0].ManufacturerItemDescription._text;
+                }
+                const currentImage = await getImageOfBarcode(barcodeOrName);
                 // console.log(currentImage)
                 // console.log(currentImage[0])
                 let img = null;
                 if(currentImage.length>0){
                     img = currentImage[0].image;
                 } else {
-                    productImage = await ProductImgSearch(currentProduct[0].ItemCode._text)
+                    //productImage = await ProductImgSearch(currentProduct[0].ItemCode._text)
+                    productImage = await ProductImgSearch(barcodeOrName)
                     img = productImage
                 }
+                
                 
 
                 products.push({
                     id: products.length+1,
+                    barcode:barcodeOrName,
                     name: nameOfProduct,
                     expiryDate: lastProduct.exp_date,
                     location: lastProduct.location,
@@ -232,9 +257,16 @@ export default function ProductsListScreen() {
         const productsArray = []
         currentId = 1
 
+        console.log(productsOfUser)
         const barcodesArray = []
         for (const prod of productsOfUser){
-            barcodesArray.push(prod.barcode)
+            if (prod.barcode ==""){
+                barcodesArray.push(prod.name);
+                console.log(prod.name);
+            }else{
+                barcodesArray.push(prod.barcode)
+            }
+            
         }
 
         const usersProducts = await db_req("products", "barcodes", "get", { "ItemCode._text":  { $in: barcodesArray }  })
@@ -263,6 +295,7 @@ export default function ProductsListScreen() {
                 
                 productsArray.push({
                     id: currentId,
+                    barcode:pr.barcode,
                     name: nameOfProduct,
                     expiryDate: pr.exp_date,
                     location: pr.location,
@@ -271,6 +304,35 @@ export default function ProductsListScreen() {
                     image: img
                 });
                 currentId = currentId + 1;
+            }else if(pr.barcode ==""){
+                nameOfProduct = pr.name
+                let productImage = suitableImages.find((element)=> (element.barcode == pr.name));
+                img = null
+
+                if (productImage == undefined){
+                    productImage = await getImageOfBarcode(pr.name)
+                    if(productImage.length==0){
+                        productImage = await ProductImgSearch(pr.name)
+                        img = productImage
+                    }else{
+                        img = productImage[0].image
+                    }
+                }else{
+                    img = productImage.image
+                }
+
+                productsArray.push({
+                    id: currentId,
+                    barcode:pr.name,
+                    name: nameOfProduct,
+                    expiryDate: pr.exp_date,
+                    location: pr.location,
+                    amount: pr.amount,
+                    unit: pr.unit,
+                    image: img
+                });
+                currentId = currentId + 1;
+
             }
         }
         setProducts(productsArray);
