@@ -22,7 +22,6 @@ function ProductsStack() {
     );
 }
 
-
 export default function ProductsScreen() {
     return (
         <ProductsStack />

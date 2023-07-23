@@ -5,7 +5,9 @@ import { ImageBackground, StyleSheet, Text, View, Button, FlatList, SafeAreaView
 import { useNavigation} from '@react-navigation/native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import Product from '../../components/product';
-import db_req from '../../../DB_requests/request';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import db_req from '../../../requests/db_req';
+import scan_req from '../../../requests/scan_req';
 import ProductImgSearch from './img_search';
 
 const styles = StyleSheet.create({
