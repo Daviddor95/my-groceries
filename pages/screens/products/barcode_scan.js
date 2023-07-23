@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Pressable } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { useNavigation, useIsFocused, useRoute } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 
 
 export default function BarcodeScanScreen() {
@@ -9,7 +9,6 @@ export default function BarcodeScanScreen() {
     const [scanned, setScanned] = useState(false);
     const navigation = useNavigation();
     const isFocused = useIsFocused();
-	const route = useRoute();
 	var pushed = false;
 
     useEffect(() => {
@@ -23,7 +22,7 @@ export default function BarcodeScanScreen() {
     const handleBarCode = async ({ type, data }) => {
 		setScanned(true);
 		if (!pushed) {
-			navigation.push('Date scan', { barcode: data, kind: type, passData: route.params?.passData });
+			navigation.push('Date scan', { barcode: data, kind: type });
 			pushed = true;
 		}
     };

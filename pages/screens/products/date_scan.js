@@ -68,7 +68,6 @@ export default function DateScanScreen() {
             navigation.push('Add product', {
                                                 prod_barcode: product_barcode,
                                                 expDate: dateStr,
-                                                passData: route.params?.passData
                                             });
         } else {
             continiousScan = setInterval(async function() { await scan() } , interval);
