@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text, Linking, Image} from 'react-native';
 import db_req from '../../../DB_requests/request';
 import * as ImageManipulator from 'expo-image-manipulator';
 
