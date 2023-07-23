@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import {Image ,StyleSheet, Text, View,TouchableOpacity} from 'react-native';
-import db_req from '../../DB_requests/request';
+import db_req from '../../requests/db_req';
 
 const Product = ({ name, expiryDate, location, amount1, unit, image, onAdd, onDecline, changeLoc, changeDate, changeUnit, onDelete })=>{
     const [amount, setAmount] = useState(0);

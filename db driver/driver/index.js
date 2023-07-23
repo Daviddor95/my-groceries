@@ -15,6 +15,8 @@ module.exports = async function (context, req) {
             ret = await collection.updateOne(req.body.content.query, req.body.content.update);
         } else if (req.body.type === 'addMore') {
             ret = await collection.insert(req.body.content);
+        } else if (req.body.type === 'delete') {
+            ret = await collection.deleteOne(req.body.content);
         }
         context.res = {
             "headers": {

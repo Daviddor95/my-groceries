@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import db_req from '../../../DB_requests/request';
+import db_req from '../../../requests/db_req';
 import { useNavigation } from '@react-navigation/native';
 
 export default function AddManual() {
@@ -36,7 +36,7 @@ export default function AddManual() {
             setErr(true);
         } else {
             const updateStr = { $push: {
-                                    products: {
+                                    product: {
                                         name: name,
                                         barcode: barcode,
                                         exp_date: dateStr,
@@ -46,9 +46,9 @@ export default function AddManual() {
                                     }
                                 }
                             };
-            const request = { query: { u_id: "1" }, update: updateStr };
+            const request = { query: { u_id: global.user_details.sub }, update: updateStr };
             console.log(await db_req("users", "regular_users", "update", request));
-            navigation.pop();
+            navigation.popToTop();
         }
     };
 

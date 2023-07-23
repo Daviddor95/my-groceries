@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, Pressable, BackHandler } from 'react-native';
+import { Text, View, StyleSheet, Pressable } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useNavigation, useIsFocused, useRoute } from '@react-navigation/native';
 
@@ -23,7 +23,7 @@ export default function BarcodeScanScreen() {
     const handleBarCode = async ({ type, data }) => {
 		setScanned(true);
 		if (!pushed) {
-			navigation.push('Date scan', { barcode: data, kind: type, u_id: route.params?.u_id });
+			navigation.push('Date scan', { barcode: data, kind: type });
 			pushed = true;
 		}
     };
@@ -52,7 +52,7 @@ export default function BarcodeScanScreen() {
             			style={StyleSheet.absoluteFillObject}/>) : null }
         		{ scanned && setScanned(false) }
         		<Pressable style={styles.button} onPress={() => {
-														navigation.push('Add manually', { u_id: route.params?.u_id });
+														navigation.push('Add manually');
 													}}>
             		<Text style={styles.instruction2}>Or click here to add the product manually</Text>
         		</Pressable>

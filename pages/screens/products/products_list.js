@@ -9,8 +9,8 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { AntDesign } from '@expo/vector-icons'; // import icons from expo vector icons library
 import Product from '../../components/product';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import db_req from '../../../DB_requests/request';
-import scan_req from '../../../DB_requests/scan_req';
+import db_req from '../../../requests/db_req';
+import scan_req from '../../../requests/scan_req';
 import ProductImgSearch from './img_search';
 
 const styles = StyleSheet.create({

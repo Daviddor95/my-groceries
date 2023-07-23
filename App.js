@@ -1,9 +1,9 @@
 import 'react-native-gesture-handler';
 import * as React from 'react';
 import * as WebBrowser from 'expo-web-browser';
-import { AppRegistry, StyleSheet, Alert, View, Text, Pressable, Image, Button } from 'react-native';
+import { AppRegistry, StyleSheet, Alert, View, Text, Pressable, Image } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
-import { NavigationContainer } from '@react-navigation/native';  // , useIsFocused, useNavigation
+import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useAuthRequest, exchangeCodeAsync, revokeAsync, ResponseType, fetchUserInfoAsync } from 'expo-auth-session';
 import ProductsScreen from './pages/screens/products/products';
@@ -14,29 +14,26 @@ import GroceryListsScreen from './pages/screens/grocery_lists/grocery_lists';
 import NotificationsScreen from './pages/screens/notifications/notifications';
 import SettingsScreen from './pages/screens/options/options';
 import StatisticsScreen from './pages/screens/statistics/statistics';
-import db_req from './DB_requests/request';
+import db_req from './requests/db_req';
 
 
-AppRegistry.registerComponent("main", () => App);   // "main"
+AppRegistry.registerComponent("main", () => App);
 WebBrowser.maybeCompleteAuthSession();
 const Drawer = createDrawerNavigator();
 const clientId = '7qhntrjqsufkivi2h730p2egef';
 const userPoolUrl = 'https://mygroceries0292444e-0292444e-dev.auth.us-east-1.amazoncognito.com';
-//// const useProxy = Platform.select({ web: false, default: true });
+// const useProxy = Platform.select({ web: false, default: true });
 // const redirectUri = AuthSession.makeRedirectUri({ useProxy });
-const redirectUri = 'exp://192.168.68.106:8081/--/products/';//David's
+const redirectUri = 'exp://192.168.68.109:8081/--/products/';//David's
 // const redirectUri = 'exp://pe8r9jq.ellakha.8081.exp.direct/--/products/';//Ella's
-// var user_details;
-// module.exports = user_details;
-var user_details = null;
 
-//     /oauth2/authorize      useAutoDiscovery(userPoolUrl); useProxy: false,
+global.user_details = null;
+
+
 export default function App() {
 	const [authTokens, setAuthTokens] = React.useState(null);
-	const [name, setName] = React.useState('');
 	const [user, setUser] = React.useState(null);
-	// const isFocused = useIsFocused();
-	// const navigation = useNavigation();
+	const [show, setShow] = React.useState(true);
 
 	const discoveryDocument = React.useMemo(() => ({
 		authorizationEndpoint: userPoolUrl + '/logout',
@@ -69,6 +66,7 @@ export default function App() {
 				return;
 			}
 			if (response.type === 'success') {
+				setShow(false);
 				async function info() {
 					await exchangeFn({
 						clientId: clientId,
@@ -78,7 +76,6 @@ export default function App() {
 							code_verifier: request.codeVerifier || "",
 						},
 					});
-					// console.log(await fetchUserInfoAsync(authTokens, discoveryDocument));
 				}
 				info();
     		}
@@ -86,7 +83,6 @@ export default function App() {
 	}, [discoveryDocument, request, response]);
 
 	const logout = async () => {
-		// console.log(await fetchUserInfoAsync(authTokens, discoveryDocument));
 		const revokeResponse = await revokeAsync({
 					"clientId": "7qhntrjqsufkivi2h730p2egef",
 					"token": authTokens.refreshToken
@@ -99,14 +95,12 @@ export default function App() {
 	};
 
 	const userInfo = async () => {
-		user_details = await fetchUserInfoAsync(authTokens, discoveryDocument);
-		setUser(user_details);
-		// export default user_details;
-		setName(user_details.name);
-		var user = await db_req("users", "regular_users", "get", { u_id : user_details.sub });
+		global.user_details = await fetchUserInfoAsync(authTokens, discoveryDocument);
+		setUser(global.user_details);
+		var user = await db_req("users", "regular_users", "get", { u_id : global.user_details.sub });
 		if (!user.length) {
-			var new_user = { u_id : user_details.sub,
-							name: user_details.name,
+			var new_user = { u_id : global.user_details.sub,
+							name: global.user_details.name,
 							grocery_lists: [],
 							recipes: [],
 							articles: [],
@@ -122,16 +116,16 @@ export default function App() {
 		<NavigationContainer>
 		{ authTokens ? (
 		<>
-		{/*<Text>Hello</Text>{console.log(fetchUserInfoAsync({"clientId": "7qhntrjqsufkivi2h730p2egef", "token": authTokens.refreshToken}, discoveryDocument))} */}
-			{/* onLayout={async () => await userInfo()}{user ? () : null }, { u_id: user_details.sub } initialParams={{ u_id: user_details.sub }}*/}
 			<StatusBar style="auto" />
 			<Drawer.Navigator initialRouteName="Products" screenOptions={{headerShown: false}} drawerContent={props => {
 					return (
 						<DrawerContentScrollView {...props} onLayout={userInfo}>
 							{ user ? (
 								<>
-									<Text style={styles.drawer_welcome}>Hello {name}</Text>
-									<Pressable style={styles.drawer_button} onPress={() => prop.navigation.navigate("Products", { u_id: user.sub })}>
+									<Text style={styles.drawer_welcome}>Hello {user.name}</Text>
+									<Pressable style={styles.drawer_button} onPress={() => { 
+											props.navigation.navigate("Products");
+										}}>
 										<Text style={styles.drawer_text}>Products</Text>
 									</Pressable>
 								</>
@@ -142,14 +136,21 @@ export default function App() {
 						</DrawerContentScrollView>
 					)
 				}}>
-				<Drawer.Screen name="Products" component={ProductsScreen} />
-				<Drawer.Screen name="Recipes" component={RecipesScreen} />
-				<Drawer.Screen name="Grocery lists" component={GroceryListsScreen} />
-				<Drawer.Screen name="Articles" component={ArticlesScreen} />
-				<Drawer.Screen name="Donations" component={DonationsScreen} />
-				<Drawer.Screen name="Notifications" component={NotificationsScreen} />
-				<Drawer.Screen name="Statistics" component={StatisticsScreen} />
-				<Drawer.Screen name="Settings" component={SettingsScreen} />
+				{ user ? (
+					<>
+					<Drawer.Screen name="Products" component={ProductsScreen} />
+					<Drawer.Screen name="Recipes" component={RecipesScreen} />
+					<Drawer.Screen name="Grocery lists" component={GroceryListsScreen} />
+					<Drawer.Screen name="Articles" component={ArticlesScreen} />
+					<Drawer.Screen name="Donations" component={DonationsScreen} />
+					<Drawer.Screen name="Notifications" component={NotificationsScreen} />
+					<Drawer.Screen name="Statistics" component={StatisticsScreen} />
+					<Drawer.Screen name="Settings" component={SettingsScreen} />
+					</>
+				) : (
+					<Drawer.Screen name="Products" component={ProductsScreen} />
+				) }
+				
 			</Drawer.Navigator>
 		</>
 		) : (
@@ -158,9 +159,11 @@ export default function App() {
 			<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
 				<Image style={styles.logo} source={require('./assets/start_screen_logo.png')} />
 				<Text style={styles.instruction}>Please sign in, or sign up if you don't have an account, in order to synchronize your groceries</Text>
-				<Pressable style={styles.login} disabled={!request} onPress={async () => { await promptAsync(); }}>
-					<Text style={styles.login_text}>Sign in or sign up</Text>
-				</Pressable>
+				{ show ? (
+					<Pressable style={styles.login} disabled={!request} onPress={async () => { await promptAsync(); }}>
+						<Text style={styles.login_text}>Sign in or sign up</Text>
+					</Pressable>
+				) : null }
 			</View>
 		</>
 		)}
@@ -195,7 +198,8 @@ const styles = StyleSheet.create({
 		padding: 10,
         marginTop: 5,
 		marginBottom: 60,
-		fontSize: 16
+		fontSize: 16,
+		textAlign: 'center'
 	},
 	logo: {
 		resizeMode: 'center',

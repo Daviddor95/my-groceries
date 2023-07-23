@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
-import db_req from '../../../DB_requests/request';
+import db_req from '../../../requests/db_req';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 
@@ -13,8 +13,6 @@ export default function AddProduct() {
     const [err, setErr] = React.useState(false);
     const navigation = useNavigation();
     const route = useRoute();
-    var user_id = route.params?.u_id;
-    console.log(user_id);
 
     const add = async (e) => {
         if (quantity == 0 || selectedUnit == 0 || loc == 0) {
@@ -29,7 +27,7 @@ export default function AddProduct() {
                                                     }
                                                 }
                                             };
-            const request = { query: { u_id: user_id }, update: updateStr };
+            const request = { query: { u_id: global.user_details.sub }, update: updateStr };
             console.log(await db_req("users", "regular_users", "update", request));
             navigation.popToTop();
         }

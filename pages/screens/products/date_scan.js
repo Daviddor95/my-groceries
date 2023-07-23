@@ -5,8 +5,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Camera } from 'expo-camera';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import db_req from '../../../DB_requests/request';
-import scan_req from '../../../DB_requests/scan_req';
+import db_req from '../../../requests/db_req';
+import scan_req from '../../../requests/scan_req';
 
 
 export default function DateScanScreen() {
@@ -68,7 +68,6 @@ export default function DateScanScreen() {
             navigation.push('Add product', {
                                                 prod_barcode: product_barcode,
                                                 expDate: dateStr,
-                                                u_id: route.params?.u_id
                                             });
         } else {
             continiousScan = setInterval(async function() { await scan() } , interval);
@@ -92,7 +91,6 @@ export default function DateScanScreen() {
             navigation.push('Add product', {
                                             prod_barcode: product_barcode,
                                             expDate: dateStr,
-                                            u_id: route.params?.u_id
                                             });
         }
     };
