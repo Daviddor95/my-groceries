@@ -166,10 +166,7 @@ const FloatingScan = ({products, setProducts, productAdded, setProductAdded}) =>
     const actions = [{text: 'Scan',name: 'scanFunc'}];
     const navigation = useNavigation();
     const scanning= async() => {
-        const passData = (isScanned) => {
-            setState({ isScanned: isScanned});
-        }
-        navigation.navigate('Barcode scan', { passData: passData.bind() });
+        navigation.navigate('Barcode scan');
     };
     const handlePress = async() => {
         await scanning();
