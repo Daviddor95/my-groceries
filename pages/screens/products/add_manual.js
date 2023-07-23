@@ -22,7 +22,7 @@ export default function AddManual() {
         const newDate = selectedDate;
         setShow(false);
         setDate(date => new Date(newDate));
-        setDateStr(dateStr => (new Date(newDate)).toLocaleDateString());
+        setDateStr(dateStr => (new Date(newDate)).toLocaleDateString("en-GB"));
     };
 
     const showDatePicker = (e) => {

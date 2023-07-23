@@ -23,7 +23,7 @@ export default function BarcodeScanScreen() {
     const handleBarCode = async ({ type, data }) => {
 		setScanned(true);
 		if (!pushed) {
-			navigation.push('Date scan', { barcode: data, kind: type });
+			navigation.push('Date scan', { barcode: data, kind: type, passData: route.params?.passData });
 			pushed = true;
 		}
     };
