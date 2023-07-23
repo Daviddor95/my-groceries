@@ -130,7 +130,10 @@ export default function App() {
 									</Pressable>
 								</>
 							) : null }
-							<Pressable style={styles.drawer_button} onPress={async () => { await logout(); }}>
+							<Pressable style={styles.drawer_button} onPress={async () => {
+																				await logout();
+																				setShow(true);
+																				}}>
 								<Text style={styles.drawer_text}>Log out</Text>
 							</Pressable>
 						</DrawerContentScrollView>
