@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useState, useEffect } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import { ImageBackground, StyleSheet, Text, View, Button, FlatList, SafeAreaView,TouchableOpacity,Dimensions, ScrollView} from 'react-native';
-import { useNavigation} from '@react-navigation/native';
+import { useNavigation, useRoute} from '@react-navigation/native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import Product from '../../components/product';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -40,16 +40,59 @@ const styles = StyleSheet.create({
     // },
 });
 
+function sortByExpirationDates(givenArray){
+    for (const pArrElement of givenArray){
+        const expiryDateStr = pArrElement.expiryDate
+        const dateElements = expiryDateStr.split("/");
+        const [dd, mm, yy] = dateElements;
+        const edjustedDate = `${yy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+        pArrElement.expiryDate = edjustedDate
+    }
+    givenArray.sort((productI, productJ) => new Date(productI.expiryDate) - new Date(productJ.expiryDate));
+    for (const pArrElem of givenArray){
+        const expiryDateSting = pArrElem.expiryDate
+        const dateElem = expiryDateSting.split("-");
+        const [y, m, d] = dateElem;
+        const dateToDisplay = `${d}/${m}/${y}`
+        pArrElem.expiryDate = dateToDisplay;
+    }
+    return givenArray;
+}
+function updateEveryProductsClass(products,setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts){
+    const arrayKitchenCabinet = []
+    const arrayFreezer = []
+    const arrayRefrigerator = []
+    for (const p of products){
+        if (p.location=="kitchen cabinet"){
+            arrayKitchenCabinet.push(p);
+        }else if(p.location=="refrigerator"){
+            arrayRefrigerator.push(p);
+        }else if(p.location=="freezer"){
+            arrayFreezer.push(p);
+        }
+    }
+    setFreezerProducts(arrayFreezer)
+    setKitchenCabinetProducts(arrayKitchenCabinet)
+    setRefrigeratorProducts(arrayRefrigerator)
+}
 
-//const navigation = useNavigation();
-function Refrigerator({products, setProducts, productAdded}) {
-    const handleDelete = async(productId) => {
-        const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
-        const ps = usersDb[0].product
-        const elementToFind = products.find(item => item.id === productId)
-        setProducts(products.filter((item) => item.id !== productId));
-
-        const foundElement = ps.findIndex((item) => {return (
+//handleChangeLocation
+const handleChangeLocation = async(productId,newLocation, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts) => {
+    const elementToFind = products.find(item => item.id === productId)
+    
+    const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
+    const ps = usersDb[0].product
+    if(!((/^[0-9]+$/).test(elementToFind.barcode))){
+        foundElement = ps.findIndex((item) => {return (
+            item.name === elementToFind.name &&
+            item.exp_date === elementToFind.expiryDate &&
+            item.location === elementToFind.location &&
+            item.amount === elementToFind.amount &&
+            item.unit === elementToFind.unit
+            );
+        });
+    }else{
+        foundElement = ps.findIndex((item) => {return (
             item.barcode === elementToFind.barcode &&
             item.exp_date === elementToFind.expiryDate &&
             item.location === elementToFind.location &&
@@ -57,13 +100,85 @@ function Refrigerator({products, setProducts, productAdded}) {
             item.unit === elementToFind.unit
             );
         });
-        const updatedProductArray = ps.filter((_, index) => index !== foundElement);
-        await db_req("users", "regular_users", "update",{query:{ u_id: global.user_details.sub }, update:{ $set: { product: updatedProductArray } }});
-    };
+    }
+    
+    (ps[foundElement]).location = newLocation;
+    await db_req("users", "regular_users", "update",{query:{ u_id: global.user_details.sub }, update:{ $set: { product: ps } }});
+    const index = products.findIndex(item => item.id === productId);
+    (products[index]).location = newLocation;
+    products = sortByExpirationDates(products);
+    updateEveryProductsClass(products, setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts);
+    
+};
 
-    const handleAdd = async(productId) => {
-        const elementToFind = products.find(item => item.id === productId)
-        
+const handleDelete = async(productId, products, setProducts, setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts) => {
+    const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
+    const ps = usersDb[0].product
+    const elementToFind = products.find(item => item.id === productId)
+    tempProducts = products.filter((item) => item.id !== productId)
+    setProducts(tempProducts);
+    updateEveryProductsClass(tempProducts, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts);
+
+    if(!((/^[0-9]+$/).test(elementToFind.barcode))){
+        foundElement = ps.findIndex((item) => {return (
+            item.name === elementToFind.name &&
+            item.exp_date === elementToFind.expiryDate &&
+            item.location === elementToFind.location &&
+            item.amount === elementToFind.amount &&
+            item.unit === elementToFind.unit
+            );
+        });
+    }else{
+        foundElement = ps.findIndex((item) => {return (
+            item.barcode === elementToFind.barcode &&
+            item.exp_date === elementToFind.expiryDate &&
+            item.location === elementToFind.location &&
+            item.amount === elementToFind.amount &&
+            item.unit === elementToFind.unit
+            );
+        });
+    }
+    
+    const updatedProductArray = ps.filter((_, index) => index !== foundElement);
+    await db_req("users", "regular_users", "update",{query:{ u_id: global.user_details.sub }, update:{ $set: { product: updatedProductArray } }});
+};
+
+const handleAdd = async(productId, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts) => {
+    const elementToFind = products.find(item => item.id === productId)
+    
+    const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
+    const ps = usersDb[0].product
+    if(!((/^[0-9]+$/).test(elementToFind.barcode))){
+        foundElement = ps.findIndex((item) => {return (
+            item.name === elementToFind.name &&
+            item.exp_date === elementToFind.expiryDate &&
+            item.location === elementToFind.location &&
+            item.amount === elementToFind.amount &&
+            item.unit === elementToFind.unit
+            );
+        });
+    }else{
+        foundElement = ps.findIndex((item) => {return (
+            item.barcode === elementToFind.barcode &&
+            item.exp_date === elementToFind.expiryDate &&
+            item.location === elementToFind.location &&
+            item.amount === elementToFind.amount &&
+            item.unit === elementToFind.unit
+            );
+        });
+    }
+    
+    (ps[foundElement]).amount = (parseInt((ps[foundElement]).amount) + 1).toString();
+    await db_req("users", "regular_users", "update",{query:{ u_id: global.user_details.sub }, update:{ $set: { product: ps } }});
+    const index = products.findIndex(item => item.id === productId);
+    (products[index]).amount = (parseInt((products[index]).amount) +1).toString();
+    updateEveryProductsClass(products, setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts);
+    
+};
+
+const handleDecline = async(productId, products, setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts) => {
+    const elementToFind = products.find(item => item.id === productId)
+    if(parseInt(elementToFind.amount)>1){
         const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
         const ps = usersDb[0].product
         if(!((/^[0-9]+$/).test(elementToFind.barcode))){
@@ -85,56 +200,30 @@ function Refrigerator({products, setProducts, productAdded}) {
                 );
             });
         }
-        
-        (ps[foundElement]).amount = (parseInt((ps[foundElement]).amount) + 1).toString();
+        (ps[foundElement]).amount = (parseInt((ps[foundElement]).amount) - 1).toString();
         await db_req("users", "regular_users", "update",{query:{ u_id: global.user_details.sub }, update:{ $set: { product: ps } }});
         const index = products.findIndex(item => item.id === productId);
-        (products[index]).amount = (parseInt((products[index]).amount) +1).toString();
-        
-    };
-
-    const handleDecline = async(productId) => {
-        const elementToFind = products.find(item => item.id === productId)
-        if(parseInt(elementToFind.amount)>1){
-            const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
-            const ps = usersDb[0].product
-            if(!((/^[0-9]+$/).test(elementToFind.barcode))){
-                console.log("here")
-                foundElement = ps.findIndex((item) => {return (
-                    item.name === elementToFind.name &&
-                    item.exp_date === elementToFind.expiryDate &&
-                    item.location === elementToFind.location &&
-                    item.amount === elementToFind.amount &&
-                    item.unit === elementToFind.unit
-                    );
-                });
-            }else{
-                console.log("there")
-                foundElement = ps.findIndex((item) => {return (
-                    item.barcode === elementToFind.barcode &&
-                    item.exp_date === elementToFind.expiryDate &&
-                    item.location === elementToFind.location &&
-                    item.amount === elementToFind.amount &&
-                    item.unit === elementToFind.unit
-                    );
-                });
-            }
-            (ps[foundElement]).amount = (parseInt((ps[foundElement]).amount) - 1).toString();
-            await db_req("users", "regular_users", "update",{query:{ u_id: global.user_details.sub }, update:{ $set: { product: ps } }});
-            const index = products.findIndex(item => item.id === productId);
-            (products[index]).amount = (parseInt((products[index]).amount) -1).toString();
-        }
-        
-    };
+        (products[index]).amount = (parseInt((products[index]).amount) -1).toString();
+        updateEveryProductsClass(products, setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts);
+    }
     
+};
+
+
+
+//const navigation = useNavigation();
+function Refrigerator({refrigeratorProducts, productAdded, productDeleted, setProductDeleted, products, setProducts, setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts}) {
     return (
     <View>
-        <FlatList data={products} keyExtractor={(item) => item.id}
+        <FlatList data={refrigeratorProducts} keyExtractor={(item) => item.id}
         renderItem={
             ({ item }) => (
             <Product id={item.id} name={item.name} expiryDate={item.expiryDate} location={item.location} amount1={item.amount} unit={item.unit}
-            image={item.image} inProcessOfAddingProduct = {productAdded} onAdd={async() => await handleAdd(item.id)} onDecline={() => handleDecline(item.id)} changeLoc={null} changeDate={null} changeUnit={null}
-            onDelete={() => handleDelete(item.id)}/>
+            image={item.image} inProcessOfAddingProduct = {productAdded} setProductDeleted = {setProductDeleted} productDeleted={productDeleted} 
+            onAdd={async() => await handleAdd(item.id, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)} 
+            onDecline={() => handleDecline(item.id, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)} 
+            onDelete={() => handleDelete(item.id, products, setProducts, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)}
+            onChangeLocation={(newLocation) => handleChangeLocation(item.id, newLocation, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)}/>
         )}
         />
     </View>
@@ -144,38 +233,55 @@ function Refrigerator({products, setProducts, productAdded}) {
 
     
 
-function Freezer() {
+function Freezer({freezerProducts,  productAdded, productDeleted, setProductDeleted, products, setProducts, setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts}) {
     return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Freezer!</Text>
+    <View>
+        <FlatList data={freezerProducts} keyExtractor={(item) => item.id}
+        renderItem={
+            ({ item }) => (
+            <Product id={item.id} name={item.name} expiryDate={item.expiryDate} location={item.location} 
+            amount1={item.amount} unit={item.unit} image={item.image} inProcessOfAddingProduct = {productAdded} 
+            setProductDeleted = {setProductDeleted} productDeleted={productDeleted} 
+            onAdd={async() => await handleAdd(item.id, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)} 
+            onDecline={() => handleDecline(item.id, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)} 
+            onDelete={() => handleDelete(item.id, products, setProducts, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)}
+            onChangeLocation={(newLocation) => handleChangeLocation(item.id, newLocation, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)}/>
+            )}/>
     </View>
     );
 }
 
-function KitchenCabinet() {
+function KitchenCabinet({kitchenCabinetProducts, productAdded, productDeleted, setProductDeleted, products, setProducts, setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts}) {
     return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Kitchen Cabinet!</Text>
+    <View>
+        <FlatList data={kitchenCabinetProducts} keyExtractor={(item) => item.id}
+        renderItem={
+            ({ item }) => (
+            <Product id={item.id} name={item.name} expiryDate={item.expiryDate} location={item.location} amount1={item.amount} unit={item.unit}
+            image={item.image} inProcessOfAddingProduct = {productAdded} 
+            setProductDeleted = {setProductDeleted} 
+            productDeleted={productDeleted} 
+            onAdd={async() => await handleAdd(item.id, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)} 
+            onDecline={() => handleDecline(item.id, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)} 
+            onDelete={() => handleDelete(item.id, products, setProducts, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)}
+            onChangeLocation={(newLocation) => handleChangeLocation(item.id, newLocation, products, setFreezerProducts, setKitchenCabinetProducts, setRefrigeratorProducts)}/>
+            )}/>
     </View>
     );
 }
 
 
 
-const FloatingScan = ({products, setProducts, productAdded, setProductAdded}) => {
+const FloatingScan = ({products, setProducts, productAdded, setProductAdded,productDeleted, setProductDeleted}) => {
     const actions = [{text: 'Scan',name: 'scanFunc'}];
     const navigation = useNavigation();
     const scanning= async() => {
         navigation.navigate('Barcode scan');
     };
     const handlePress = async() => {
-        await scanning();
-        const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
-        const productsOfUser = usersDb[0].product;
-        const lastProduct = productsOfUser[productsOfUser.length - 1];
-        const BeforeLastProduct = productsOfUser[productsOfUser.length - 2];
-        if(lastProduct.name != BeforeLastProduct.name){
-            setProductAdded(true)
+        if(!productDeleted){
+            await scanning();
+            setProductAdded(true);
         }
         
     };
@@ -194,7 +300,7 @@ const FloatingScan = ({products, setProducts, productAdded, setProductAdded}) =>
         borderRadius: 50,
         elevation: 10
         }}
-        onPressIn={handlePress}>
+        onPressIn={handlePress} disabled={productDeleted}>
             <ImageBackground 
             source={require('../../../assets/barcode-scan-custom5.png')} 
             style={{top: 5,right: 2, width: '80%', height: '80%',backgroundColor: 'black', alignItems: 'flex-start',}}
@@ -206,6 +312,9 @@ const FloatingScan = ({products, setProducts, productAdded, setProductAdded}) =>
 const Tab = createMaterialTopTabNavigator();
 export default function ProductsListScreen() {
     const [products, setProducts] = useState([]);
+    const [kitchenCabinetProducts, setKitchenCabinetProducts] = useState([]);
+    const [freezerProducts, setFreezerProducts] = useState([]);
+    const [refrigeratorProducts, setRefrigeratorProducts] = useState([]);
     const [productAdded, setProductAdded] = useState(false);
     const [productDeleted, setProductDeleted] = useState(false);
     const isFocused = useIsFocused();
@@ -221,7 +330,14 @@ export default function ProductsListScreen() {
         create();
 
         async function addProd(){
-            if(productAdded){
+            // const route = useRoute();
+            //route.params?.isScanned
+            const usersDb = await getUser();
+            //const productsOfUser = usersDb.product
+            const productsOfUser = usersDb[0].product;
+            tempProductsArray = products;
+
+            if((!productDeleted)&& productAdded && (productsOfUser.length != products.length)){
                 const usersDb = await getUser();
                 //const productsOfUser = usersDb.product
                 const productsOfUser = usersDb[0].product;
@@ -235,8 +351,6 @@ export default function ProductsListScreen() {
                     nameOfProduct = currentProduct[0].ManufacturerItemDescription._text;
                 }
                 const currentImage = await getImageOfBarcode(barcodeOrName);
-                // console.log(currentImage)
-                // console.log(currentImage[0])
                 let img = null;
                 if(currentImage.length>0){
                     img = currentImage[0].image;
@@ -248,8 +362,8 @@ export default function ProductsListScreen() {
                 
                 
 
-                products.push({
-                    id: products.length+1,
+                tempProductsArray.push({
+                    id: tempProductsArray.length+1,
                     barcode:barcodeOrName,
                     name: nameOfProduct,
                     expiryDate: lastProduct.exp_date,
@@ -258,10 +372,14 @@ export default function ProductsListScreen() {
                     unit: lastProduct.unit,
                     image: img
                 })
+                tempProductsArray = sortByExpirationDates(tempProductsArray)
+                setProducts(tempProductsArray);
+                updateEveryProductsClass(tempProductsArray,setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts);
                 setProductAdded(false)
             }
         }
         addProd();
+        
         
     }, [isFocused]);
     async function getUser(){
@@ -273,18 +391,19 @@ export default function ProductsListScreen() {
         return suitableImage;
     }
 
+
+
     async function productsListCreate() {
         usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
         const productsOfUser = usersDb[0].product
-        const productsArray = []
+        productsArray = []
         currentId = 1
 
-        console.log(productsOfUser)
+
         const barcodesArray = []
         for (const prod of productsOfUser){
             if (prod.barcode ==""){
                 barcodesArray.push(prod.name);
-                console.log(prod.name);
             }else{
                 barcodesArray.push(prod.barcode)
             }
@@ -357,20 +476,42 @@ export default function ProductsListScreen() {
 
             }
         }
+        productsArray = sortByExpirationDates(productsArray)
         setProducts(productsArray);
+        updateEveryProductsClass(products,setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts);
     }
     
     return (
         <View style={{ flex: 1,width: Dimensions.get('window').width }}>
             <Tab.Navigator>
-                <Tab.Screen name="cupboard" component={KitchenCabinet}/>
-                <Tab.Screen name="Refrigerator" >
-                {() => <Refrigerator products={products} setProducts={setProducts} productAdded = {productAdded} setProductAdded = {setProductAdded}/>}
+                <Tab.Screen name="Cupboard">
+                {() => <KitchenCabinet kitchenCabinetProducts={kitchenCabinetProducts}  productAdded = {productAdded} 
+                productDeleted = {productDeleted} setProductDeleted={setProductDeleted}
+                products={products} setProducts={setProducts} 
+                setFreezerProducts={setFreezerProducts} setKitchenCabinetProducts={setKitchenCabinetProducts}
+                setRefrigeratorProducts={setRefrigeratorProducts}/>}
                 </Tab.Screen>
-                <Tab.Screen options={{}} name="Freezer" component={Freezer}/>
-                {/* <FloatingScan actions={scanning} onPressItem={name => {console.log(`selected button: ${name}`);}}/> */}
+
+                <Tab.Screen name="Refrigerator" >
+                {() => <Refrigerator refrigeratorProducts={refrigeratorProducts}  productAdded = {productAdded} 
+                productDeleted = {productDeleted} setProductDeleted={setProductDeleted}
+                products={products} setProducts={setProducts} 
+                setFreezerProducts={setFreezerProducts} setKitchenCabinetProducts={setKitchenCabinetProducts}
+                setRefrigeratorProducts={setRefrigeratorProducts}/>}
+                </Tab.Screen>
+
+                <Tab.Screen name="Freezer">
+                {() => <Freezer freezerProducts={freezerProducts}  productAdded = {productAdded} 
+                productDeleted = {productDeleted} setProductDeleted={setProductDeleted}
+                products={products} setProducts={setProducts} 
+                setFreezerProducts={setFreezerProducts} setKitchenCabinetProducts={setKitchenCabinetProducts}
+                setRefrigeratorProducts={setRefrigeratorProducts}/>}
+                </Tab.Screen>
+
             </Tab.Navigator>
-            <FloatingScan products={products} setProducts={setProducts} productAdded = {productAdded} setProductAdded = {setProductAdded}/>
+
+            <FloatingScan products={products} setProducts={setProducts} productAdded = {productAdded} 
+            setProductAdded = {setProductAdded} productDeleted = {productDeleted} setProductDeleted={setProductDeleted}/>
         </View>
     );
 }
