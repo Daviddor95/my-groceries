@@ -9,6 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import db_req from '../../../requests/db_req';
 import scan_req from '../../../requests/scan_req';
 import ProductImgSearch from './img_search';
+isEntered = false;
 
 const styles = StyleSheet.create({
     container: {
@@ -321,6 +322,18 @@ export default function ProductsListScreen() {
     
     const scanning = {text: "Scan"};
     //icon: require("./images/ic_accessibility_white.png"),
+
+    // useEffect(() => {
+    //     async function create(){
+    //         if(!isEntered){
+    //             await productsListCreate();
+    //             isEntered = true;
+    //         }
+    //     }
+    //     create();
+    // }, []);
+
+
     useEffect(() => {
         async function create(){
             if(products.length == 0){
@@ -478,7 +491,7 @@ export default function ProductsListScreen() {
         }
         productsArray = sortByExpirationDates(productsArray)
         setProducts(productsArray);
-        updateEveryProductsClass(products,setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts);
+        updateEveryProductsClass(productsArray,setFreezerProducts,setKitchenCabinetProducts, setRefrigeratorProducts);
     }
     
     return (
