@@ -82,6 +82,7 @@ export default function App() {
     	}
 	}, [discoveryDocument, request, response]);
 
+
 	const logout = async () => {
 		const revokeResponse = await revokeAsync({
 					"clientId": "7qhntrjqsufkivi2h730p2egef",
@@ -110,6 +111,7 @@ export default function App() {
 						};
 			await db_req("users", "regular_users", "add", new_user);
 		}
+		
 	};
 
 	return (

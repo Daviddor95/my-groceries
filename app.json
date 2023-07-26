@@ -2,6 +2,7 @@
   "expo": {
     "name": "my-groceries",
     "slug": "my-groceries",
+    "permissions": ["NOTIFICATIONS"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
