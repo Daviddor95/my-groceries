@@ -1,14 +1,34 @@
 import * as React from 'react'
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import {Image ,StyleSheet, Text, View,TouchableOpacity} from 'react-native';
+import {Image, StyleSheet, Text, View,TouchableOpacity} from 'react-native';
+import {Picker} from '@react-native-picker/picker'
 
-const Product = ({id, name, expiryDate, location, amount1, unit, image,inProcessOfAddingProduct, onAdd, onDecline, changeLoc, changeDate, changeUnit, onDelete })=>{
+const Product = ({id, name, expiryDate, location, amount1, unit, image,
+    inProcessOfAddingProduct,setProductDeleted, productDeleted,
+     onAdd, onDecline, onDelete, onChangeLocation })=>{
     const [amount, setAmount] = useState(parseInt(amount1));
     const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
     const [isDeclineButtonDisabled, setIsDeclineButtonDisabled] = useState(false);
+    const [isLocDisabled, setIsLocDisabled] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState();
     //const img = require('./../../assets/tomato.jpg'); // need to be evantually the "item.image"
     const img = image
+    arrayOfLocs = (["kitchen cabinet", "refrigerator","freezer" ]).filter((item) => item !== location)
+    
+    const changeArrayOfLocs = (arr) => {
+        return arr.map((item) => {
+            if (item === "kitchen cabinet") {
+                return "cupboard";
+            }
+            return item;
+        });
+    };
+    arrayOfLocs = changeArrayOfLocs(arrayOfLocs);
+    let locationStr = location
+    if(location == "kitchen cabinet"){
+        locationStr = "cupboard";
+    }
     
     
     const handleIncrement = async() => {
@@ -21,7 +41,6 @@ const Product = ({id, name, expiryDate, location, amount1, unit, image,inProcess
   
     const handleDecrement = async() => {
         if (amount > 1) {
-            //another line needs to be added for updating the database of the user
             setIsDeclineButtonDisabled(true);
             setAmount(amount - 1);
             await onDecline();
@@ -30,10 +49,23 @@ const Product = ({id, name, expiryDate, location, amount1, unit, image,inProcess
     };
   
     const handleDelete = async () => {
+        setProductDeleted(true);
         await onDelete();
-        //another line needs to be added for updating the database of the user
+        setProductDeleted(false);
     };
-  
+
+    const changeLocation = async (newLoc) => {
+        setIsLocDisabled(true);
+        if(newLoc == "kitchen cabinet"){
+            setSelectedLocation("cupboard")
+        }else{
+            setSelectedLocation(newLoc)
+        }
+        
+        location = newLoc
+        await onChangeLocation(newLoc);
+        setIsLocDisabled(false);
+    };
     return (
     <View style={styles.container}>
         <View style={styles.item}>
@@ -44,19 +76,38 @@ const Product = ({id, name, expiryDate, location, amount1, unit, image,inProcess
 
                 <View style={styles.amountContainer}>
 
-                    <TouchableOpacity onPress={handleDecrement} disabled={isDeclineButtonDisabled && !inProcessOfAddingProduct}>
+                    <TouchableOpacity onPress={handleDecrement} disabled={isDeclineButtonDisabled}>
                         <Ionicons name="remove-circle-outline" size={24} color="black" />
                     </TouchableOpacity>
 
                     <Text style={styles.amount}>{amount}</Text>
 
-                    <TouchableOpacity onPress={handleIncrement} disabled={isAddButtonDisabled && !inProcessOfAddingProduct}>
+                    <TouchableOpacity onPress={handleIncrement} disabled={isAddButtonDisabled}>
                         <Ionicons name="add-circle-outline" size={24} color="black" />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={handleDelete}>
                         <Ionicons name="trash-outline" size={24} color="black" style={styles.trashCanTinyImage}/>
                     </TouchableOpacity>
+
+                    <Picker selectedValue={selectedLocation} size={14} style={{ height: 50, width: 150 }} 
+                    onValueChange={(itemValue, itemIndex) =>{
+                        val = itemValue; 
+                        if(itemValue == "cupboard")
+                        {
+                            val = "kitchen cabinet"
+                        }; 
+                        changeLocation(val)
+                    }} 
+                    disabled={isLocDisabled}>
+                        <Picker.Item label={locationStr} value={location} style={{ fontSize: 14 }} />
+                        <Picker.Item 
+                        label={arrayOfLocs[0] === "kitchen cabinet" ? "cupboard" : arrayOfLocs[0]} value={arrayOfLocs[0]}
+                        style={{ fontSize: 14 }} />
+                        <Picker.Item 
+                        label={arrayOfLocs[1] === "kitchen cabinet" ? "cupboard" : arrayOfLocs[1]} value={arrayOfLocs[1]} 
+                        style={{ fontSize: 14}}/>
+                    </Picker>
 
                 </View>
 
