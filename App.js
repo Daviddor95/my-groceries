@@ -17,6 +17,21 @@ import StatisticsScreen from './pages/screens/statistics/statistics';
 import db_req from './requests/db_req';
 import LoadingScreen from './pages/screens/products/loading';
 
+//ellas added code:(these 14 lines)
+import * as TaskManager from 'expo-task-manager';;
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import { useEffect, useState, useRef } from 'react';
+import { Platform } from 'react-native';
+Notifications.setNotificationHandler({
+	handleNotification: async () => ({
+		shouldShowAlert: true,
+		shouldPlaySound: false,
+		shouldSetBadge: false,
+	}),
+});
+
+
 
 AppRegistry.registerComponent("main", () => App);
 WebBrowser.maybeCompleteAuthSession();
@@ -35,6 +50,11 @@ export default function App() {
 	const [show, setShow] = React.useState(true);
 	const [isSignedIn, setIsSignedIn] = React.useState(false);
 	const [name, setName] = React.useState('');
+	//ella's code: next 4 lines
+	const [expoPushToken, setExpoPushToken] = useState('');
+	const [notification, setNotification] = useState(false);
+	const notificationListener = useRef();
+	const responseListener = useRef();
 	
 	const discoveryDocument = React.useMemo(() => ({
 		authorizationEndpoint: userPoolUrl + '/logout',
@@ -82,6 +102,43 @@ export default function App() {
     		}
     	}
 	}, [discoveryDocument, request, response]);
+
+	useEffect(() => {
+		//ella added this code:
+		registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+		notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+			setNotification(notification);
+		});
+		responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+			console.log(response);
+		});
+		Notifications.removeNotificationSubscription(notificationListener.current);
+		Notifications.removeNotificationSubscription(responseListener.current);
+		
+		async function pushNotification(){
+			if(isSignedIn){
+				const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
+				const ps = usersDb[0].product
+				newArrPr = []
+				for(const p of ps){
+					const expiryDateStr = p.exp_date
+					const dateElements = expiryDateStr.split("/");
+					const [dd, mm, yy] = dateElements;
+					const edjustedDate = `${yy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+					if(p.hasOwnProperty("name")){
+						newArrPr.push({name:p.name, expDate:edjustedDate})
+					}else{
+						const currentProduct = await db_req("products", "barcodes", "get", { "ItemCode._text": p.barcode});
+                    	nameOfProduct = currentProduct[0].ManufacturerItemDescription._text;
+						newArrPr.push({name:nameOfProduct, expDate:edjustedDate})
+					}
+				}
+				await schedulePushNotification(newArrPr);
+			}
+			
+        }
+		pushNotification();
+	},[isSignedIn]);
 
 
 	const logout = async () => {
@@ -231,3 +288,61 @@ const styles = StyleSheet.create({
 		fontSize: 18
 	}
 });
+
+//more of ella's code:
+async function schedulePushNotification(pro) {
+	let body = "The following products will expire soon:\n";
+	for (const produ of pro) {
+		const expirationDate = new Date(produ.expDate);
+    	const today = new Date();
+    	const timeDifference = expirationDate.getTime() - today.getTime();
+    	const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+    	if (daysDifference <= 3 && daysDifference >0) {
+      	body += `${produ.name} (expires in ${daysDifference} days)\n`;
+    	} else if (daysDifference ==0) {
+			body += `${produ.name} (expires today!)\n`;
+		} else if (daysDifference <0) {
+			body += `${produ.name} (already expired! ${produ.expDate})\n`;
+		}
+	}
+	
+	await Notifications.scheduleNotificationAsync({
+		content: {
+			title: "Expiration Notification",
+			body: body,
+			data: { data: 'goes here' },
+		},
+		trigger: { seconds: 2 },
+	});
+}
+  
+async function registerForPushNotificationsAsync() {
+	let token;
+	if (Platform.OS === 'android') {
+		await Notifications.setNotificationChannelAsync('default', {
+			name: 'default',
+			importance: Notifications.AndroidImportance.MAX,
+			vibrationPattern: [0, 250, 250, 250],
+			lightColor: '#FF231F7C',
+		});
+	}
+  
+	if (Device.isDevice){
+		const { status: existingStatus } = await Notifications.getPermissionsAsync();
+		let finalStatus = existingStatus;
+	  	if (existingStatus !== 'granted') {
+			const { status } = await Notifications.requestPermissionsAsync();
+			finalStatus = status;
+	  	}
+	  	if (finalStatus !== 'granted') {
+			alert('Failed to get push token for push notification!');
+			return;
+	  	}
+	  	token = (await Notifications.getExpoPushTokenAsync()).data;
+	} else {
+		alert('Must use physical device for Push Notifications');
+	}
+	return token;
+}
+  
