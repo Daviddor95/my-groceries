@@ -132,7 +132,7 @@ export default function App() {
 									<Text style={styles.drawer_welcome}>Hello {name}</Text>
 								) : null }
 								<Pressable style={styles.drawer_button} onPress={() => { 
-												props.navigation.navigate("Products");
+												props.navigation.navigate("ProductsScreen");
 											}}>
 									<Text style={styles.drawer_text}>Products</Text>
 								</Pressable>

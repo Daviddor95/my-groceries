@@ -28,7 +28,7 @@ export default function AddProduct() {
                                                 }
                                             };
             const request = { query: { u_id: global.user_details.sub }, update: updateStr };
-            console.log(await db_req("users", "regular_users", "update", request));
+            await db_req("users", "regular_users", "update", request);
             navigation.popToTop();
         }
     };
