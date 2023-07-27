@@ -1,7 +1,13 @@
 const { MongoClient, ServerApiVersion } = require('mongodb');
+// defines DB client configuration
 const uri = process.env.ATLAS_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 }, { connectTimeoutMS: 30000 }, { keepAlive: 1});
 
+/**
+ * Sends a request to the DB based on the given parameters, and returns the response from the DB
+ * @param {*} context 
+ * @param {object} req 
+ */
 module.exports = async function (context, req) {
     try {
         const db = client.db(req.body.db);

@@ -3,14 +3,22 @@ import { Text, View, StyleSheet, Pressable } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
-
+/**
+ * Barcode scan screen that continiously scans the product's barcode using the device's camera
+ * @returns View
+ */
 export default function BarcodeScanScreen() {
+	// defines react native hooks
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
     const navigation = useNavigation();
     const isFocused = useIsFocused();
+	// defines a flag that indicates if the user procceded to the next screen
 	var pushed = false;
 
+	/**
+	 * Gets camera permissions
+	 */
     useEffect(() => {
 		const getPermissions = async () => {
         	const { status } = await BarCodeScanner.requestPermissionsAsync();
@@ -19,6 +27,10 @@ export default function BarcodeScanScreen() {
     	getPermissions();
     }, []);
 
+	/**
+	 * Moves to the next screen (Date scan screen)
+	 * @param {import('expo-barcode-scanner').BarCodeScannerResult} param0 
+	 */
     const handleBarCode = async ({ type, data }) => {
 		setScanned(true);
 		if (!pushed) {
@@ -27,6 +39,7 @@ export default function BarcodeScanScreen() {
 		}
     };
 
+	// handling different permissions states
     if (hasPermission === null) {
 		return (
         	<View style={styles.permissions}>
@@ -34,7 +47,6 @@ export default function BarcodeScanScreen() {
         	</View>
     	);
     }
-
     if (hasPermission === false) {
     	return (
         	<View style={styles.permissions}>
@@ -60,6 +72,9 @@ export default function BarcodeScanScreen() {
     );
 }
 
+/**
+ * Styles to apply on the components
+ */
 const styles = StyleSheet.create({
     instruction: {
     	color: 'white',
