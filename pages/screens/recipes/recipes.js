@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Button } from 'react-native';
+import { View, Text, TextInput, Button, Pressable } from 'react-native';
 import * as React from 'react'
 import axios from 'axios';
 import db_req from '../../../requests/db_req';
+import {ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 const hostKeyFromAzure = "EfuCsPakhgtgH2mNo8E4l6RoFedefApFgkpb2lFE2hgCAzFuOwWgig=="
 const API_URL = `https://crawler-mg.azurewebsites.net/api/getrec?code=${hostKeyFromAzure}`
 
+
+
+
 export default function RecipesScreen() {
     const [recipe, setRecipe] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     async function fetchRecipe() {
         const ingredients = await getProd();
         //console.log(JSON.parse(ingredients))
@@ -51,8 +56,61 @@ export default function RecipesScreen() {
         fetchRecipe().then((recipe) => {
             console.log("Generated Recipe:", recipe);
             setRecipe(recipe);
-        }).catch((error) => {console.error("Error:", error);});
+        }).catch((error) => 
+        {console.error("Error:", error);}).finally(() => {
+            setIsLoading(false);
+        });
     }
 
-    return (<View><Button title="Generate Recipe" onPress={generate} /><Text>{recipe.content}</Text></View>);
+    return (
+    <View>
+        <View  style={styles.container}>
+        <Pressable onPress={generate} style={styles.submit}>
+            <Text style={styles.buttonText}>Generate Recipe</Text>
+        </Pressable>
+        </View>
+        
+        {isLoading ? (<View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0000ff" /> </View>) : 
+            (<ScrollView>{recipe && <Text style={styles.recipeText}>{recipe.content}</Text>}</ScrollView>)}
+            </View>);
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    recipeText: {
+        fontSize: 16,
+        textAlign: 'left',
+        marginVertical: 20,
+        marginLeft:20
+    },
+    submit: {
+        flex: 1,
+        marginTop: 35,
+        marginBottom: 15,
+        marginRight: 10,
+        marginLeft: 10,
+        padding: 15,
+        borderRadius: 10,
+        borderColor: 'lightskyblue',
+        backgroundColor: 'lightskyblue',
+        elevation: 5,
+    },
+    buttonText: {
+        textAlign: 'center',
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    generateButton: {
+        marginVertical: 10,
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
+  
