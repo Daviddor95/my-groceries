@@ -189,6 +189,11 @@ export default function App() {
 											}}>
 									<Text style={styles.drawer_text}>Products</Text>
 								</Pressable>
+								<Pressable style={styles.drawer_button} onPress={() => { 
+												props.navigation.navigate("Recipes");
+											}}>
+									<Text style={styles.drawer_text}>Recipes</Text>
+								</Pressable>
 								<Pressable style={styles.drawer_button} onPress={async () => {
 																						await logout();
 																						setShow(true);
@@ -304,7 +309,7 @@ async function schedulePushNotification(pro) {
 			body: body,
 			data: { data: 'goes here' },
 		},
-		trigger: { seconds: 2 },
+		trigger: { hour: 15, minute: 42,repeats: true, },
 	});
 }
   
