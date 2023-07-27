@@ -13,7 +13,7 @@ import db_req from './requests/db_req';
 import LoadingScreen from './pages/screens/products/loading';
 
 //ellas added code:(these 14 lines)
-import * as TaskManager from 'expo-task-manager';;
+// import * as TaskManager from 'expo-task-manager';;
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useState, useRef } from 'react';
