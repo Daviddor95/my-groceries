@@ -1,8 +1,15 @@
+/**
+ * Sends the given image to the Read API, extracts the date from the result, and returns it
+ * @param {*} context 
+ * @param {*} req 
+ */
 module.exports = async function (context, req) {
     const Buffer = require('buffer/').Buffer;
+    // defines constants for the API credentials
     const key = process.env.AZURE_KEY;
     const endpoint = process.env.Azure_ENDPOINT + "computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read&language=en&gender-neutral-caption=False";
     try {
+        // sends the image to the API and returns the appropriate response
         const binaryImage = Buffer.from(req.body.img_b64.replace('data:image/jpeg;base64,', ''), 'base64');
         await fetch(endpoint, {
             method: 'POST',
@@ -37,14 +44,21 @@ module.exports = async function (context, req) {
             };
         });
 
+        /**
+         * Extracts the date from the given recognized text
+         * @param {Response} ocrRes 
+         * @returns Date array
+         */
         function getDate(ocrRes) {
             var results = ocrRes.readResult.content;
             if (results && results.length) {
+                // extracts all dates
                 var dates = [];
                 var dateStr = results.match(/(?:(?:0?[1-9]|1[0-9]|2[0-9]|3[0-1])(?:\/|-|\.|\s)(?:0?[1-9]|1[0-2])(?:\/|-|\.|\s)(?:\d{4}|\d{2}))|(?:(?:0?[1-9]|1[0-2])(?:\/|-|\.|\s)(?:0?[1-9]|1[0-9]|2[0-9]|3[0-1])(?:\/|-|\.|\s)(?:\d{4}|\d{2}))|(?:(?:\d{4}|\d{2})(?:\/|-|\.|\s)(?:0?[1-9]|1[0-2])(?:\/|-|\.|\s)(?:0?[1-9]|1[0-9]|2[0-9]|3[0-1]))|(?:(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:\/|-|\.|\s)\d{2}(?:\/|-|\.|\s)(?:\d{4}|\d{2}))|(?:(?:\d{2})(?:\/|-|\.|\s)(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:\/|-|\.|\s)(?:\d{4}|\d{2}))|(?:\d{2}(?:\/|-|\.)\d{4})|(?:\d{2}(?:\/|-|\.)\d{2})/gi);
                 if (dateStr && dateStr.length) {
                     dates = dates.concat(dateStr);
                 }
+                // validates all dates and parse them
                 var datesObj = [];
                 var monthsStr = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
                 var currYear = new Date().getFullYear();

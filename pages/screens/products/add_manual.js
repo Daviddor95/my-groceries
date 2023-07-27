@@ -1,12 +1,17 @@
 import * as React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import db_req from '../../../requests/db_req';
 import { useNavigation } from '@react-navigation/native';
 
+/**
+ * Add manual screen that adds the product to the DB according to the user entered details
+ * @returns View
+ */
 export default function AddManual() {
+    // defines react native hooks
     const [name, onNameChange] = React.useState('');
     const [barcode, onBarcodeChange] = React.useState('');
     const [quantity, onQuantityChange] = React.useState('');
@@ -18,19 +23,32 @@ export default function AddManual() {
     const [err, setErr] = React.useState(false);
     const navigation = useNavigation();
 
+    /**
+     * Listener for the manual date picker
+     */
     const onChangeDate = (e, selectedDate) => {
         const newDate = selectedDate;
         setShow(false);
-        setDate(date => new Date(newDate));
-        setDateStr(dateStr => (new Date(newDate)).toLocaleDateString("en-GB"));
+        if (e.type == "set") {
+            setDate(date => new Date(newDate));
+            setDateStr(dateStr => (new Date(newDate)).toLocaleDateString("en-GB"));
+        }
     };
 
+    /**
+     * Shows the manual date picker
+     * @param {Event} e 
+     */
     const showDatePicker = (e) => {
         if (Platform.OS === 'android') {
             setShow(true);
         }
     };
 
+    /**
+     * Adds the product to the DB and returns to the products list
+     * @param {Event} e 
+     */
     const addProduct = async (e) => {
         if (name == 0 || quantity == 0 || selectedUnit == 0 || loc == 0) {
             setErr(true);
@@ -103,14 +121,19 @@ export default function AddManual() {
             </View>
             <View style={styles.container}>
                 { err && <Text style={styles.instruction}>
-                    Some required fields are missing, please make sure you entered the required information about the product.
+                    Some required fields are missing, please make sure you entered the required information about the 
+                    product.
                 </Text> }
+                <Image style={styles.img} source={require('../../../assets/groceries.png')} />
             </View>
             { show && <DateTimePicker testID="dateTimePicker" value={date} mode='date' onChange={onChangeDate} /> }
         </View>
     )
 }
 
+/**
+ * Styles to apply on the components
+ */
 const styles = StyleSheet.create({
     instruction: {
         padding: 10,
@@ -208,4 +231,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         color: 'darkgray',
     },
+    img: {
+        marginTop: 10,
+		resizeMode: 'contain',
+		marginBottom: 20,
+		height: 300,
+	},
 });

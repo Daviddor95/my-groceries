@@ -1,4 +1,12 @@
 
+/**
+ * Sends request to the DB driver with the given parameters
+ * @param {string} database 
+ * @param {string} coll 
+ * @param {string} req_type 
+ * @param {object} req 
+ * @returns Promise<Response>
+ */
 export default async function db_req(database, coll, req_type, req) {
     return res = await fetch('https://mongodbdriver.azurewebsites.net/api/driver?code=kTjkzOm7Ckr4SvjHuD_UQy1I1k-VgtYFSsx5ZH0QYNnqAzFu4nQJow==', {
         method: 'POST',

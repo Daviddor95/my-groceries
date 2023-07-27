@@ -8,8 +8,12 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import db_req from '../../../requests/db_req';
 import scan_req from '../../../requests/scan_req';
 
-
+/**
+ * Date scan screen that continiously scans the expiration date using the device's camera
+ * @returns View
+ */
 export default function DateScanScreen() {
+    // defines react native hooks
     const [permission, reqPermission] = Camera.useCameraPermissions();
     const [productInfo, setProductInfo] = useState([]);
     const [date, setDate] = useState(new Date());
@@ -18,12 +22,16 @@ export default function DateScanScreen() {
     const isFocused = useIsFocused();
     const route = useRoute();
     const camRef = useRef(null);
+    // defines variables, a constant, and a flag
     const product_barcode = "" + route.params?.barcode;
     const interval = 8000;
     var continiousScan;
     var scanned = false;
     var dateStr = '';
 
+    /**
+     * Gets the product name from the DB, based on the barcode scanned before
+     */
     useEffect(() => {
 		async function getProductName() {
 			const res = await db_req("products", "barcodes", "get", { ItemCode : { _text: product_barcode } });
@@ -40,6 +48,7 @@ export default function DateScanScreen() {
         }
     }, []);
 
+    // handling different permissions states
     if (!permission) {
         return (
             <View style={styles.permissions}>
@@ -58,6 +67,9 @@ export default function DateScanScreen() {
         )
     }
 
+    /**
+     * Listener for the manual date picker
+     */
     const onChangeDate = (e, selectedDate) => {
         setShow(false);
         clearInterval(continiousScan);
@@ -74,11 +86,19 @@ export default function DateScanScreen() {
         }
     };
 
+    /**
+     * Shows the manual date picker
+     * @param {Event} e 
+     */
     const showDatePicker = (e) => {
         clearInterval(continiousScan);
         setShow(true);
     };
 
+    /**
+     * Sends the picture to the server in order to extract the date out of it
+     * @param {import('expo-image-manipulator').ImageResult} param0 
+     */
     const onPicture = async ({ uri, width, height, exif, base64 }) => {
         const resizeImg = await ImageManipulator.manipulateAsync(uri, [], { format: 'jpeg', base64: true });
         const b64img = resizeImg.base64;
@@ -89,12 +109,15 @@ export default function DateScanScreen() {
             scanned = true;
             clearInterval(continiousScan);
             navigation.push('Add product', {
-                                            prod_barcode: product_barcode,
-                                            expDate: dateStr,
+                                                prod_barcode: product_barcode,
+                                                expDate: dateStr,
                                             });
         }
     };
 
+    /**
+     * Takes picture and extracts the expiration date out of it
+     */
     const scan = async () => {
         if (scanned) {
             clearInterval(continiousScan);
@@ -106,6 +129,9 @@ export default function DateScanScreen() {
         }
     };
 
+    /**
+     * Configures the continious scan
+     */
     const onCameraReady = async () => {
         if (camRef && (await camRef.current)) {
             continiousScan = setInterval(async function() { await scan() } , interval);
@@ -115,7 +141,8 @@ export default function DateScanScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.details}>
-                Product: {productInfo.length > 0 ? productInfo[0].manufacturer : "Loading..."}, barcode: {route.params?.barcode}
+                Product: {productInfo.length > 0 ? productInfo[0].manufacturer : "Loading..."}, barcode: 
+                {route.params?.barcode}
             </Text>
             <Text style={styles.instruction}>Please point the camera to the product's expiration date</Text>
             <View style={styles.scanner}>
@@ -131,6 +158,9 @@ export default function DateScanScreen() {
     )
 }
 
+/**
+ * Styles to apply on the components
+ */
 const styles = StyleSheet.create({
     permissions: {
         flex: 1,

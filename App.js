@@ -8,12 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useAuthRequest, exchangeCodeAsync, revokeAsync, ResponseType, fetchUserInfoAsync } from 'expo-auth-session';
 import ProductsScreen from './pages/screens/products/products';
 import RecipesScreen from './pages/screens/recipes/recipes';
-import ArticlesScreen from './pages/screens/articles/articles';
-import DonationsScreen from './pages/screens/donations/donations';
-import GroceryListsScreen from './pages/screens/grocery_lists/grocery_lists';
-import NotificationsScreen from './pages/screens/notifications/notifications';
 import SettingsScreen from './pages/screens/options/options';
-import StatisticsScreen from './pages/screens/statistics/statistics';
 import db_req from './requests/db_req';
 import LoadingScreen from './pages/screens/products/loading';
 
@@ -25,8 +20,8 @@ const clientId = '7qhntrjqsufkivi2h730p2egef';
 const userPoolUrl = 'https://mygroceries0292444e-0292444e-dev.auth.us-east-1.amazoncognito.com';
 // const useProxy = Platform.select({ web: false, default: true });
 // const redirectUri = AuthSession.makeRedirectUri({ useProxy });
-//const redirectUri = 'exp://192.168.68.109:8081/--/products/';//David's
-const redirectUri = 'exp://pe8r9jq.ellakha.8081.exp.direct/--/products/';//Ella's
+const redirectUri = 'exp://192.168.68.109:8081/--/products/';//David's
+// const redirectUri = 'exp://pe8r9jq.ellakha.8081.exp.direct/--/products/';//Ella's
 global.user_details = null;
 
 
@@ -125,7 +120,7 @@ export default function App() {
 		<NavigationContainer>
 			<StatusBar style="auto" />
 			{ authTokens ? (
-				<Drawer.Navigator name='Drawer' initialRouteName="Loading" screenOptions={{headerShown: false}}
+				<Drawer.Navigator name='Drawer' initialRouteName="Loading" screenOptions={{ headerShown: false }}
 					drawerContent={props => {
 						return (
 							<DrawerContentScrollView {...props}>
@@ -150,11 +145,6 @@ export default function App() {
 						<>
 							<Drawer.Screen name="ProductsScreen" component={ProductsScreen} />
 							<Drawer.Screen name="Recipes" component={RecipesScreen} />
-							<Drawer.Screen name="Grocery lists" component={GroceryListsScreen} />
-							<Drawer.Screen name="Articles" component={ArticlesScreen} />
-							<Drawer.Screen name="Donations" component={DonationsScreen} />
-							<Drawer.Screen name="Notifications" component={NotificationsScreen} />
-							<Drawer.Screen name="Statistics" component={StatisticsScreen} />
 							<Drawer.Screen name="Settings" component={SettingsScreen} />
 						</>
 					) : (
@@ -186,7 +176,8 @@ const styles = StyleSheet.create({
 	container: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center' 
+        justifyContent: 'center',
+		backgroundColor: '#e3f2e1'
     },
 	drawer_button: {
 		backgroundColor: 'transparent',

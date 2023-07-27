@@ -1,12 +1,16 @@
 import * as React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
 import db_req from '../../../requests/db_req';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-
+/**
+ * Add product screen that adds the product to the DB with additional user entered details
+ * @returns View
+ */
 export default function AddProduct() {
+    // defines react native hooks
     const [quantity, onQuantityChange] = React.useState('');
     const [selectedUnit, setSelectedUnit] = React.useState('');
     const [loc, setLoc] = React.useState('');
@@ -14,6 +18,10 @@ export default function AddProduct() {
     const navigation = useNavigation();
     const route = useRoute();
 
+    /**
+     * Adds the product to the DB and returns to the products list
+     * @param {Event} e 
+     */
     const add = async (e) => {
         if (quantity == 0 || selectedUnit == 0 || loc == 0) {
             setErr(true);
@@ -73,13 +81,18 @@ export default function AddProduct() {
             </View>
             <View style={styles.container}>
                 { err && <Text style={styles.instruction}>
-                    Some required fields are missing, please make sure you entered the required information about the product.
+                    Some required fields are missing, please make sure you entered the required information about the 
+                    product.
                     </Text> }
+                 <Image style={styles.img} source={require('../../../assets/groceries.png')} />
             </View>
         </View>
     )
 }
 
+/**
+ * Styles to apply on the components
+ */
 const styles = StyleSheet.create({
     instruction: {
         padding: 10,
@@ -141,4 +154,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         color: 'darkgray',
     },
+    img: {
+        marginTop: 50,
+		resizeMode: 'contain',
+		marginBottom: 30,
+		height: 300,
+	},
 });
