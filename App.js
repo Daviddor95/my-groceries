@@ -332,7 +332,7 @@ async function schedulePushNotification(pro) {
 	const currentDate = new Date();
 	const currentHour = currentDate.getHours();
 	const currentMinutes = currentDate.getMinutes();
-
+	await Notifications.cancelAllScheduledNotificationsAsync();
 	await Notifications.scheduleNotificationAsync({
 		content: {
 			title: "Expiration Notification",

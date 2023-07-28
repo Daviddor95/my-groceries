@@ -1,7 +1,7 @@
 
 /**
  * Sends request to the date scan server with the given image
- * @param {string} img 
+ * @param {string} img
  * @returns Promise<Response>
  */
 export default async function scan_req(img) {

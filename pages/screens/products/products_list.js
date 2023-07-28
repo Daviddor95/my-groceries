@@ -484,11 +484,12 @@ export default function ProductsListScreen() {
         setProducts(productsArray);
         updateEveryProductsClass(productsArray,setFrPr,setKCPr, setRefPr);
     }
-    // headerStyle: { backgroundColor: '#58ab4f', }, tabBarStyle: ,
-    // headerTintColor: '#fff', cardStyle: { backgroundColor: '#e3f2e1', }, 
+
     return (
         <View style={{ flex: 1,width: Dimensions.get('window').width }}>
-            <Tab.Navigator screenOptions={{ tabBarIndicatorStyle: { backgroundColor: '#fff' }, tabBarStyle: { backgroundColor: '#58ab4f', borderTopWidth: 0 }, tabBarActiveTintColor: '#fff', tabBarInactiveTintColor: '#e6e6e6', }}>
+            <Tab.Navigator screenOptions={{ tabBarIndicatorStyle: { backgroundColor: '#fff' },
+                    tabBarStyle: { backgroundColor: '#58ab4f', borderTopWidth: 0 }, tabBarActiveTintColor: '#fff',
+                    tabBarInactiveTintColor: '#e6e6e6', }}>
                 <Tab.Screen name="Cupboard" >
                 {() => <KitchenCabinet kCProducts={kCProducts} isAdded = {isAdded} 
                 isDeleted = {isDeleted} setProductDeleted={setProductDeleted}
