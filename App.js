@@ -309,7 +309,7 @@ async function schedulePushNotification(pro) {
 			body: body,
 			data: { data: 'goes here' },
 		},
-		trigger: { hour: 15, minute: 42,repeats: true, },
+		trigger: { hour: 23, minute: 50,repeats: true, },
 	});
 }
   
