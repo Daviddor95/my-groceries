@@ -1,12 +1,15 @@
+import 'react-native-gesture-handler';
 import { useState } from 'react';
 import { View, Text, TextInput, Button, Pressable } from 'react-native';
 import * as React from 'react'
 import db_req from '../../../requests/db_req';
 import {ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { createStackNavigator } from '@react-navigation/stack';
+const Stack = createStackNavigator();
 const hostKeyFromAzure = "EfuCsPakhgtgH2mNo8E4l6RoFedefApFgkpb2lFE2hgCAzFuOwWgig=="
 const API_URL = `https://crawler-mg.azurewebsites.net/api/getrec?code=${hostKeyFromAzure}`
 
-export default function RecipesScreen() {
+function RecipesStack() {
     const [recipe, setRecipe] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
@@ -50,7 +53,7 @@ export default function RecipesScreen() {
         return str;
     }
     // generating a recipe
-    function generate(){
+    const generate = function(){
         fetchRecipe().then((recipe) => {
             setRecipe(recipe);
         }).catch((error) => 
@@ -59,23 +62,42 @@ export default function RecipesScreen() {
         });
     }
 
+    const Generator = function() {
+        return (
+            <View>
+                <View style={styles.container}>
+                    <Text style={styles.instruction}>Click the button bellow and wait for the recipe to be generated 
+                        (using AI) based on your products and their expiration dates</Text>
+                    {isLoading ? (<View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#0000ff" /> </View>) : 
+                        (<ScrollView>{recipe && <Text style={styles.recipeText}>{recipe.content}</Text>}</ScrollView>)}
+                    <Pressable onPress={generate} style={styles.submit}>
+                        <Text style={styles.buttonText}>Generate Recipe</Text>
+                    </Pressable>
+                </View>
+
+                
+            </View>
+        )
+    };
+    
     return (
-    <View>
-        <View  style={styles.container}>
-        <Pressable onPress={generate} style={styles.submit}>
-            <Text style={styles.buttonText}>Generate Recipe</Text>
-        </Pressable>
-        </View>
-        
-        {isLoading ? (<View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0000ff" /> </View>) : 
-            (<ScrollView>{recipe && <Text style={styles.recipeText}>{recipe.content}</Text>}</ScrollView>)}
-            </View>);
+    <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#58ab4f', shadowColor: 'transparent' },
+                        headerTintColor: '#fff', cardStyle: { backgroundColor: '#e3f2e1', }, }}>
+        <Stack.Screen name='generator' component={Generator} options={{ title: "Recipes", }} />
+    </Stack.Navigator>
+    );
 };
+
+export default function RecipesScreen() {
+    return (
+        <RecipesStack />
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -86,8 +108,6 @@ const styles = StyleSheet.create({
         marginLeft:20
     },
     submit: {
-        flex: 1,
-        marginTop: 35,
         marginBottom: 15,
         marginRight: 10,
         marginLeft: 10,
@@ -106,8 +126,15 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     loadingContainer: {
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
+    instruction: {
+		padding: 10,
+        marginTop: 5,
+		fontSize: 16,
+		textAlign: 'center'
+	},
 });
   

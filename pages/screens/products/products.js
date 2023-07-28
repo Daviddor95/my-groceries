@@ -16,7 +16,7 @@ const Stack = createStackNavigator();
  */
 function ProductsStack() {
     return (
-    	<Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#58ab4f', },
+    	<Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#58ab4f', shadowColor: 'transparent' },
 											 headerTintColor: '#fff', cardStyle: { backgroundColor: '#e3f2e1', }, }}>
     		<Stack.Screen name="ProductsListScreen" component={ProductsListScreen} options={{
 					title: "Product list",

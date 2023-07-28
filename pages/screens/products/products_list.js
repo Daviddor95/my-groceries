@@ -213,7 +213,7 @@ const handleSubtract = async(productId, products, setFrPr,setKCPr, setRefPr) => 
 function Refrigerator({refProducts, isAdded, isDeleted, setProductDeleted, 
     products, setProducts, setFrPr, setKCPr, setRefPr}) {
         return (
-        <View>
+        <View style={{backgroundColor: '#e3f2e1', flex: 1 }}>
             <FlatList data={refProducts} keyExtractor={(item) => item.id}
             renderItem={
                 ({ item }) => (
@@ -238,7 +238,7 @@ function Refrigerator({refProducts, isAdded, isDeleted, setProductDeleted,
 function Freezer({freezerProducts,  isAdded, isDeleted, setProductDeleted,
     products, setProducts, setFrPr,setKCPr, setRefPr}) {
         return (
-        <View>
+        <View style={{backgroundColor: '#e3f2e1', flex: 1 }}>
             <FlatList data={freezerProducts} keyExtractor={(item) => item.id}
             renderItem={
                 ({ item }) => (
@@ -259,7 +259,7 @@ function Freezer({freezerProducts,  isAdded, isDeleted, setProductDeleted,
 function KitchenCabinet({kCProducts, isAdded, isDeleted, setProductDeleted,
     products, setProducts, setFrPr, setKCPr, setRefPr}) {
         return (
-        <View>
+        <View style={{backgroundColor: '#e3f2e1', flex: 1 }}>
             <FlatList data={kCProducts} keyExtractor={(item) => item.id}
             renderItem={
                 ({ item }) => (
@@ -484,11 +484,12 @@ export default function ProductsListScreen() {
         setProducts(productsArray);
         updateEveryProductsClass(productsArray,setFrPr,setKCPr, setRefPr);
     }
-    
+    // headerStyle: { backgroundColor: '#58ab4f', }, tabBarStyle: ,
+    // headerTintColor: '#fff', cardStyle: { backgroundColor: '#e3f2e1', }, 
     return (
         <View style={{ flex: 1,width: Dimensions.get('window').width }}>
-            <Tab.Navigator>
-                <Tab.Screen name="Cupboard">
+            <Tab.Navigator screenOptions={{ tabBarIndicatorStyle: { backgroundColor: '#fff' }, tabBarStyle: { backgroundColor: '#58ab4f', borderTopWidth: 0 }, tabBarActiveTintColor: '#fff', tabBarInactiveTintColor: '#e6e6e6', }}>
+                <Tab.Screen name="Cupboard" >
                 {() => <KitchenCabinet kCProducts={kCProducts} isAdded = {isAdded} 
                 isDeleted = {isDeleted} setProductDeleted={setProductDeleted}
                 products={products} setProducts={setProducts} 
@@ -504,7 +505,7 @@ export default function ProductsListScreen() {
                 setRefPr={setRefPr}/>}
                 </Tab.Screen>
 
-                <Tab.Screen name="Freezer">
+                <Tab.Screen name="Freezer" >
                 {() => <Freezer freezerProducts={freezerProducts}  isAdded = {isAdded} 
                 isDeleted = {isDeleted} setProductDeleted={setProductDeleted}
                 products={products} setProducts={setProducts} 
