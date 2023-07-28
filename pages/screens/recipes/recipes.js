@@ -1,30 +1,28 @@
 import { useState } from 'react';
 import { View, Text, TextInput, Button, Pressable } from 'react-native';
 import * as React from 'react'
-import axios from 'axios';
 import db_req from '../../../requests/db_req';
 import {ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 const hostKeyFromAzure = "EfuCsPakhgtgH2mNo8E4l6RoFedefApFgkpb2lFE2hgCAzFuOwWgig=="
 const API_URL = `https://crawler-mg.azurewebsites.net/api/getrec?code=${hostKeyFromAzure}`
 
-
-
-
 export default function RecipesScreen() {
     const [recipe, setRecipe] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
     async function fetchRecipe() {
+        // get the products and their information
         const ingredients = await getProd();
-        //console.log(JSON.parse(ingredients))
         const response = await fetch(API_URL, {
             method: "POST",
             headers: {"Content-Type": "application/json",},
             body: ingredients,
         });
         const data = await response.json();
-        console.log(data)
         return data;
     }
+    // creating an array with product name, amount and expiration date,
+    // and passing it to concatinated string which is the return value
     async function getProd(){
         const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
         const ps = usersDb[0].product
@@ -49,12 +47,11 @@ export default function RecipesScreen() {
             str = str + "Product's number " +i+ "name is "
             + ar.name + ", it's expiration date is "+ ar.expDate + "and its amount is" + ar.amount+".";
         }
-        console.log(str)
         return str;
     }
+    // generating a recipe
     function generate(){
         fetchRecipe().then((recipe) => {
-            console.log("Generated Recipe:", recipe);
             setRecipe(recipe);
         }).catch((error) => 
         {console.error("Error:", error);}).finally(() => {

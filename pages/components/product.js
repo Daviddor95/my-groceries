@@ -12,7 +12,6 @@ const Product = ({id, name, expiryDate, location, amount1, unit, image,
     const [isDeclineButtonDisabled, setIsDeclineButtonDisabled] = useState(false);
     const [isLocDisabled, setIsLocDisabled] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState();
-    //const img = require('./../../assets/tomato.jpg'); // need to be evantually the "item.image"
     const img = image
     arrayOfLocs = (["kitchen cabinet", "refrigerator","freezer" ]).filter((item) => item !== location)
     
@@ -33,25 +32,36 @@ const Product = ({id, name, expiryDate, location, amount1, unit, image,
     
     const handleIncrement = async() => {
         setIsAddButtonDisabled(true);
+        setIsDeclineButtonDisabled(true);
+        setProductDeleted(true);
         setAmount(amount + 1);
         await onAdd();
         setIsAddButtonDisabled(false);
-        //another line needs to be added for updating the database of the user
+        setIsDeclineButtonDisabled(false);
+        setProductDeleted(false);
     };
   
     const handleDecrement = async() => {
         if (amount > 1) {
             setIsDeclineButtonDisabled(true);
+            setIsAddButtonDisabled(true);
+            setProductDeleted(true);
             setAmount(amount - 1);
             await onDecline();
             setIsDeclineButtonDisabled(false);
+            setIsAddButtonDisabled(false);
+            setProductDeleted(false);
         }
     };
   
     const handleDelete = async () => {
         setProductDeleted(true);
+        setIsDeclineButtonDisabled(true);
+        setIsAddButtonDisabled(true);
         await onDelete();
         setProductDeleted(false);
+        setIsDeclineButtonDisabled(false);
+        setIsAddButtonDisabled(false);
     };
 
     const changeLocation = async (newLoc) => {
@@ -166,7 +176,6 @@ const styles = StyleSheet.create({
         color: '#666',
         marginTop: 3,
         textAlign: 'right',
-        //marginBottom: 0,
     },
     productTinyImage: {
         width: 87,
@@ -175,9 +184,6 @@ const styles = StyleSheet.create({
     },
     trashCanTinyImage: {
         marginLeft: 10,
-        //marginLeft: 180,
-        //marginLeft: 150,
-        //marginLeft: 90,
     },
 });
 

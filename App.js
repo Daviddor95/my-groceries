@@ -11,9 +11,6 @@ import RecipesScreen from './pages/screens/recipes/recipes';
 import SettingsScreen from './pages/screens/options/options';
 import db_req from './requests/db_req';
 import LoadingScreen from './pages/screens/products/loading';
-
-//ellas added code:(these 14 lines)
-// import * as TaskManager from 'expo-task-manager';;
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useState, useRef } from 'react';
@@ -33,8 +30,7 @@ WebBrowser.maybeCompleteAuthSession();
 const Drawer = createDrawerNavigator();
 const clientId = '7qhntrjqsufkivi2h730p2egef';
 const userPoolUrl = 'https://mygroceries0292444e-0292444e-dev.auth.us-east-1.amazoncognito.com';
-// const useProxy = Platform.select({ web: false, default: true });
-// const redirectUri = AuthSession.makeRedirectUri({ useProxy });
+
 //const redirectUri = 'exp://192.168.68.109:8081/--/products/';//David's
 const redirectUri = 'exp://pe8r9jq.ellakha.8081.exp.direct/--/products/';//Ella's
 global.user_details = null;
@@ -45,7 +41,7 @@ export default function App() {
 	const [show, setShow] = React.useState(true);
 	const [isSignedIn, setIsSignedIn] = React.useState(false);
 	const [name, setName] = React.useState('');
-	//ella's code: next 4 lines
+	
 	const [expoPushToken, setExpoPushToken] = useState('');
 	const [notification, setNotification] = useState(false);
 	const notificationListener = useRef();
@@ -99,7 +95,8 @@ export default function App() {
 	}, [discoveryDocument, request, response]);
 
 	useEffect(() => {
-		//ella added this code:
+		// listeners taken from 
+		// https://docs.expo.dev/push-notifications/receiving-notifications/#notification-event-listeners
 		registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
 		notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
 			setNotification(notification);
@@ -115,10 +112,13 @@ export default function App() {
 				const usersDb = await db_req("users", "regular_users", "get", {u_id:global.user_details.sub });
 				const ps = usersDb[0].product
 				newArrPr = []
+				//create an array of elements with product name and expiration date
 				for(const p of ps){
 					const expiryDateStr = p.exp_date
 					const dateElements = expiryDateStr.split("/");
 					const [dd, mm, yy] = dateElements;
+					// change from this format 11/01/2023 to 01-11-2023
+					// so subtracting dates will be simplier
 					const edjustedDate = `${yy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
 					if(p.hasOwnProperty("name")){
 						newArrPr.push({name:p.name, expDate:edjustedDate})
@@ -128,9 +128,10 @@ export default function App() {
 						newArrPr.push({name:nameOfProduct, expDate:edjustedDate})
 					}
 				}
+				// send the array to function that schedule notification
+				// and updates the body of the notification to be baised on newArrPr
 				await schedulePushNotification(newArrPr);
 			}
-			
         }
 		pushNotification();
 	},[isSignedIn]);
@@ -285,15 +286,16 @@ const styles = StyleSheet.create({
 	}
 });
 
-//more of ella's code:
+
 async function schedulePushNotification(pro) {
 	let body = "The following products will expire soon:\n";
 	for (const produ of pro) {
-		const expirationDate = new Date(produ.expDate);
+		const expDat = new Date(produ.expDate);
     	const today = new Date();
-    	const timeDifference = expirationDate.getTime() - today.getTime();
+    	const timeDifference = expDat.getTime() - today.getTime();
     	const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
 
+		// edit the body of notification to be all the products with epiration date in less then 4 days
     	if (daysDifference <= 3 && daysDifference >0) {
       	body += `${produ.name} (expires in ${daysDifference} days)\n`;
     	} else if (daysDifference ==0) {
@@ -313,10 +315,12 @@ async function schedulePushNotification(pro) {
 			body: body,
 			data: { data: 'goes here' },
 		},
-		trigger: { hour: currentHour, minute: currentMinutes+1,repeats: true, },
+		// setting notification to be sent a minute after signing in
+		trigger: { hour: currentHour, minute: currentMinutes+1, repeats: true, },
 	});
 }
-  
+
+// code is taken from https://docs.expo.dev/versions/latest/sdk/notifications/
 async function registerForPushNotificationsAsync() {
 	let token;
 	if (Platform.OS === 'android') {
