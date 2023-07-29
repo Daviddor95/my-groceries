@@ -15,6 +15,8 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useState, useRef } from 'react';
 import { Platform } from 'react-native';
+
+
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
 		shouldShowAlert: true,
@@ -22,31 +24,33 @@ Notifications.setNotificationHandler({
 		shouldSetBadge: false,
 	}),
 });
-
-
-
+// initializes required components
 AppRegistry.registerComponent("main", () => App);
 WebBrowser.maybeCompleteAuthSession();
 const Drawer = createDrawerNavigator();
+// defines constants and a global variable for the signed in user's details
 const clientId = '7qhntrjqsufkivi2h730p2egef';
 const userPoolUrl = 'https://mygroceries0292444e-0292444e-dev.auth.us-east-1.amazoncognito.com';
-
-//const redirectUri = 'exp://192.168.68.109:8081/--/products/';//David's
-const redirectUri = 'exp://pe8r9jq.ellakha.8081.exp.direct/--/products/';//Ella's
+const redirectUri = 'exp://192.168.68.109:8081/--/products/';//David's
+// const redirectUri = 'exp://pe8r9jq.ellakha.8081.exp.direct/--/products/';//Ella's
 global.user_details = null;
 
-
+/**
+ * Defines the application structure anf flow, including account authentication an notifications
+ * @returns NavigationContainer
+ */
 export default function App() {
+	// defines react native hooks
 	const [authTokens, setAuthTokens] = React.useState(null);
 	const [show, setShow] = React.useState(true);
 	const [isSignedIn, setIsSignedIn] = React.useState(false);
 	const [name, setName] = React.useState('');
-	
 	const [expoPushToken, setExpoPushToken] = useState('');
 	const [notification, setNotification] = useState(false);
 	const notificationListener = useRef();
 	const responseListener = useRef();
 	
+	// authentication redirect URLs
 	const discoveryDocument = React.useMemo(() => ({
 		authorizationEndpoint: userPoolUrl + '/logout',
 		tokenEndpoint: userPoolUrl + '/oauth2/token',
@@ -55,6 +59,7 @@ export default function App() {
 		endSessionEndpoint: userPoolUrl + '/logout',
 	}), []);
 
+	// creates the required object for user authentication
 	const [request, response, promptAsync] = useAuthRequest({
 		clientId,
 		responseType: ResponseType.Code,
@@ -63,7 +68,14 @@ export default function App() {
 		scopes: ['openid', 'profile', 'email'],
     }, discoveryDocument );
 
+	/**
+	 * Handles the user authentication
+	 */
 	React.useEffect(() => {
+		/**
+		 * exchanges tokens
+		 * @param {*} exchangeTokenReq 
+		 */
 		const exchangeFn = async (exchangeTokenReq) => {
 			try {
 				const exchangeTokenResponse = await exchangeCodeAsync(exchangeTokenReq, discoveryDocument);
@@ -72,6 +84,7 @@ export default function App() {
 				console.error(error);
 			}
 		};
+		// handles the response
 		if (response) {
 			if (response.error) {
 				Alert.alert('Authentication error', response.params.error_description || 'something went wrong');
@@ -136,7 +149,9 @@ export default function App() {
 		pushNotification();
 	},[isSignedIn]);
 
-
+	/**
+	 * Logs out the current user
+	 */
 	const logout = async () => {
 		const revokeResponse = await revokeAsync({
 					"clientId": clientId,
@@ -150,6 +165,9 @@ export default function App() {
 		setIsSignedIn(false);
 	};
 
+	/**
+	 * Gets the user information, and creates a user in the DB if there is no such user there
+	 */
 	const userInfo = async () => {
 		var details = await fetchUserInfoAsync(authTokens, discoveryDocument);
 		global.user_details = details
@@ -170,6 +188,9 @@ export default function App() {
 		setIsSignedIn(true);
 	};
 
+	/**
+	 * Calls the userInfo function
+	 */
 	const callUserInfo = () => {
 		userInfo();
 	}
@@ -191,7 +212,7 @@ export default function App() {
 									<Text style={styles.drawer_text}>Products</Text>
 								</Pressable>
 								<Pressable style={styles.drawer_button} onPress={() => { 
-												props.navigation.navigate("Recipes");
+												props.navigation.navigate("RecipesScreen");
 											}}>
 									<Text style={styles.drawer_text}>Recipes</Text>
 								</Pressable>
@@ -207,7 +228,7 @@ export default function App() {
 					{ isSignedIn ? (
 						<>
 							<Drawer.Screen name="ProductsScreen" component={ProductsScreen} />
-							<Drawer.Screen name="Recipes" component={RecipesScreen} />
+							<Drawer.Screen name="RecipesScreen" component={RecipesScreen} />
 							<Drawer.Screen name="Settings" component={SettingsScreen} />
 						</>
 					) : (
@@ -235,6 +256,9 @@ export default function App() {
 	);
 }
 
+/**
+ * Styles to apply on the components
+ */
 const styles = StyleSheet.create({
 	container: {
         flex: 1,
@@ -308,7 +332,7 @@ async function schedulePushNotification(pro) {
 	const currentDate = new Date();
 	const currentHour = currentDate.getHours();
 	const currentMinutes = currentDate.getMinutes();
-
+	await Notifications.cancelAllScheduledNotificationsAsync();
 	await Notifications.scheduleNotificationAsync({
 		content: {
 			title: "Expiration Notification",

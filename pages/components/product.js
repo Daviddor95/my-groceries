@@ -131,7 +131,7 @@ const Product = ({id, name, expiryDate, location, amount1, unit, image,
 const styles = StyleSheet.create({
     container: {
         padding: 0,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#e3f2e1',
         marginVertical: 5,
         paddingBottom:0,
         borderRadius: 10,
