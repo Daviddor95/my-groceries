@@ -65,18 +65,19 @@ function RecipesStack() {
     const Generator = function() {
         return (
             <View>
+                <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.container}>
                     <Text style={styles.instruction}>Click the button bellow and wait for the recipe to be generated 
                         (using AI) based on your products and their expiration dates</Text>
                     {isLoading ? (<View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#0000ff" /> </View>) : 
-                        (<ScrollView>{recipe && <Text style={styles.recipeText}>{recipe.content}</Text>}</ScrollView>)}
-                    <Pressable onPress={generate} style={styles.submit}>
+                        (<ScrollView style={styles.recipeContainer}>{recipe && <Text style={styles.recipeText}>{recipe.content}</Text>}</ScrollView>)}
+                    <Pressable onPress={generate} style={styles.submit} disabled={isLoading}>
                         <Text style={styles.buttonText}>Generate Recipe</Text>
                     </Pressable>
                 </View>
 
-                
+                </ScrollView>
             </View>
         )
     };
@@ -136,5 +137,8 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		textAlign: 'center'
 	},
+    recipeContainer: {
+        maxHeight: 1000, 
+    },
 });
   
