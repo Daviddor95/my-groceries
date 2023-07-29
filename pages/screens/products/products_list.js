@@ -367,7 +367,7 @@ export default function ProductsListScreen() {
                 
                 // adding the new added product to a temporary array
                 tempProductsArray.push({
-                    id: tempProductsArray.length+1,
+                    id: productsOfUser.length+1,
                     barcode:barcodeOrName,
                     name: nameOfProduct,
                     expiryDate: lastProduct.exp_date,
