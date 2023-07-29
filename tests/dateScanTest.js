@@ -1,29 +1,88 @@
+const fs = require('fs');
+const { globSync } = require('glob');
+var count = 0;
 
-// var req = require('request').defaults({ encoding: null });
-var data;
+/**
+ * Compares all recognized expiration dates with the corresponding real expiration dates
+ * @param {string} directory 
+ */
+async function checkAll(directory) {
+    var images = globSync(directory + '/*.jpg', { withFileTypes: false });
+    for (const img of images) {
+        await check('.\\' + img);
+    }
+    console.log("Summary: passed " + count + " out of " + images.length);
+    await new Promise(resolve => setTimeout(resolve, 100));
+}
 
-// req.get('https://www.durable-tech.com/hs-fs/hub/74377/file-15507215-jpg/gallery/album/1899/ink-jet-date-coding_1.jpg?width=330&height=230&name=ink-jet-date-coding_1.jpg', function (error, response, body) {
-//     if (!error && response.statusCode == 200) {
-//         data = "data:" + response.headers["content-type"] + ";base64," + Buffer.from(body).toString('base64');
-//     }
-// });
+/**
+ * Compares a recognized expiration date with the corresponding real expiration date
+ * @param {string} name 
+ */
+async function check(name) {
+    const file64 = fs.readFileSync(name, {encoding: 'base64'});
+    var res = await scan_req(file64);
+    if (!res) {
+        console.log("ERROR");
+    } else if (res.dateFound) {
+        var resDate = new Date(res.date).toLocaleDateString("en-GB");
+        var fileName = name.substring(name.lastIndexOf('\\') + 1);
+        var date;
+        switch (fileName) {
+            case '1.jpg':
+                date = new Date(2023, 6, 20).toLocaleDateString("en-GB");
+                break;
+            case '2.jpg':
+                date = new Date(2023, 8, 14).toLocaleDateString("en-GB");
+                break;
+            case '3.jpg':
+                date = new Date(2023, 4, 1).toLocaleDateString("en-GB");
+                break;
+            case '4.jpg':
+                date = new Date(2024, 0, 26).toLocaleDateString("en-GB");
+                break;
+            case '5.jpg':
+                date = new Date(2026, 1, 16).toLocaleDateString("en-GB");
+                break;
+            case '6.jpg':
+                date = new Date(2023, 4, 18).toLocaleDateString("en-GB");
+                break;
+            case '7.jpg':
+                date = new Date(2025, 9, 26).toLocaleDateString("en-GB");
+                break;
+            case '8.jpg':
+                date = new Date(2023, 6, 26).toLocaleDateString("en-GB");
+                break;
+            case '9.jpg':
+                date = new Date(2025, 5, 9).toLocaleDateString("en-GB");
+                break;
+            case '10.jpg':
+                date = new Date(2023, 11, 3).toLocaleDateString("en-GB");
+                break;
+            case '11.jpg':
+                date = new Date(2024, 1, 4).toLocaleDateString("en-GB");
+                break;
+            case '12.jpg':
+                date = new Date(2024, 5, 17).toLocaleDateString("en-GB");
+                break;
+            case '13.jpg':
+                date = new Date(2024, 10, 14).toLocaleDateString("en-GB");
+                break;
+            default:
+                break;
+        }
+        if (resDate == date) {
+            count++;
+        }
+        console.log('Recognized: ' + resDate + ', Expected: ' + date + ' => ' + (resDate == date));
+    }
+}
 
-var https = require('https');
-
-https.get('https://cdn.w600.comps.canstockphoto.co.il/%D7%94%D7%A6%D7%A4%D7%9F-%D7%97%D7%A1%D7%95%D7%9D-%D7%90%D7%95%D7%9B%D7%9C-%D7%9B%D7%A0%D7%94-%D7%AA%D7%90%D7%A8%D7%99%D7%9A-%D7%A9%D7%9C-%D7%AA%D7%A4%D7%95%D7%92%D7%94-%D7%A6%D7%99%D7%9C%D7%95%D7%9E%D7%99-%D7%A1%D7%98%D7%95%D7%A7_csp9339703.jpg', (resp) => {
-    resp.setEncoding('base64');
-    body = "data:" + resp.headers["content-type"] + ";base64,";
-    resp.on('data', (data) => { body += data});
-    resp.on('end', async () => {
-        data = body;
-        await scan_req(data);
-        //return res.json({result: body, status: 'success'});
-    });
-}).on('error', (e) => {
-    console.log(`Got error: ${e.message}`);
-});
-
-
+/**
+ * Sends a request to the server
+ * @param {string} img 
+ * @returns 
+ */
 const scan_req = async function (img) {
     return ret = await fetch('https://datescan.azurewebsites.net/api/date_scan?code=6yVtlA7nN71t1o_kH2C3E3CWBCNvfTsdhlfAnBSEsB-kAzFuk8PoNw==', {
         method: 'POST',
@@ -31,9 +90,7 @@ const scan_req = async function (img) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ img_b64: img }),
-    }).then(result => result.json()).then(x => console.log(x)).catch(err => console.log("scan_req: " + err));
+    }).then(result => result.json()).catch(err => console.log("scan_req: " + err));
 }
 
-// console.log((await ));
-
-
+checkAll('./assets/dateScanAssets');
