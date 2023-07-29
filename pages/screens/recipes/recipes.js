@@ -57,7 +57,7 @@ export default function RecipesScreen() {
         {console.error("Error:", error);}).finally(() => {
             setIsLoading(false);
         });
-    }
+    } 
 
     return (
     <View>
