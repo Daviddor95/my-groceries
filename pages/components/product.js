@@ -96,7 +96,7 @@ const Product = ({id, name, expiryDate, location, amount1, unit, image,
                         <Ionicons name="add-circle-outline" size={24} color="black" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={handleDelete}>
+                    <TouchableOpacity onPress={handleDelete} disabled={productDeleted}>
                         <Ionicons name="trash-outline" size={24} color="black" style={styles.trashCanTinyImage}/>
                     </TouchableOpacity>
 
