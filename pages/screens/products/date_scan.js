@@ -24,7 +24,7 @@ export default function DateScanScreen() {
     const camRef = useRef(null);
     // defines variables, a constant, and a flag
     const product_barcode = "" + route.params?.barcode;
-    const interval = 8000;
+    const interval = 3000;
     var continiousScan;
     var scanned = false;
     var dateStr = '';

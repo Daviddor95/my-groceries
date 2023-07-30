@@ -65,7 +65,7 @@ export default function AddManual() {
                                 }
                             };
             const request = { query: { u_id: global.user_details.sub }, update: updateStr };
-            console.log(await db_req("users", "regular_users", "update", request));
+            await db_req("users", "regular_users", "update", request);
             navigation.popToTop();
         }
     };
@@ -124,6 +124,8 @@ export default function AddManual() {
                     Some required fields are missing, please make sure you entered the required information about the 
                     product.
                 </Text> }
+            </View>
+            <View style={styles.container}>
                 <Image style={styles.img} source={require('../../../assets/groceries.png')} />
             </View>
             { show && <DateTimePicker testID="dateTimePicker" value={date} mode='date' onChange={onChangeDate} /> }
@@ -136,8 +138,9 @@ export default function AddManual() {
  */
 const styles = StyleSheet.create({
     instruction: {
-        padding: 10,
-        marginTop: 5,
+        paddingLeft: 10,
+        paddingRight: 10,
+        marginTop: 10,
     },
     container: {
         flexDirection: 'row',
@@ -232,7 +235,6 @@ const styles = StyleSheet.create({
         color: 'darkgray',
     },
     img: {
-        marginTop: 10,
 		resizeMode: 'contain',
 		marginBottom: 20,
 		height: 300,
