@@ -7,7 +7,6 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import Product from '../../components/product';
 import db_req from '../../../requests/db_req';
 import ProductImgSearch from './img_search';
-const APROXIMATE_PRODUCTS_LIMIT = 100000000;
 
 
 // sorting the array by ascending expiration  dates
@@ -28,6 +27,14 @@ function sortByExpirationDates(givenArray){
         pArrElem.expiryDate = dateToDisplay;
     }
     return givenArray;
+}
+
+// create a unique id
+function generateId(barcode) {
+    const timeNow = Date.now();
+    console.log(`${barcode}${timeNow}` + "   "+ typeof (`${barcode}${timeNow}`))
+    return `${barcode}${timeNow}`;
+
 }
 
 // updating the products of every tab
@@ -368,7 +375,7 @@ export default function ProductsListScreen() {
                 
                 // adding the new added product to a temporary array
                 tempProductsArray.push({
-                    id: productsOfUser.length + APROXIMATE_PRODUCTS_LIMIT,
+                    id: generateId(barcodeOrName),
                     barcode:barcodeOrName,
                     name: nameOfProduct,
                     expiryDate: lastProduct.exp_date,
