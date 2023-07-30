@@ -84,6 +84,8 @@ export default function AddProduct() {
                     Some required fields are missing, please make sure you entered the required information about the 
                     product.
                     </Text> }
+            </View>
+            <View style={styles.container}>
                  <Image style={styles.img} source={require('../../../assets/groceries.png')} />
             </View>
         </View>
@@ -155,7 +157,7 @@ const styles = StyleSheet.create({
         color: 'darkgray',
     },
     img: {
-        marginTop: 50,
+        marginTop: 20,
 		resizeMode: 'contain',
 		marginBottom: 30,
 		height: 300,
