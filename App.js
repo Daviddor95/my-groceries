@@ -333,15 +333,17 @@ async function schedulePushNotification(pro) {
 	const currentHour = currentDate.getHours();
 	const currentMinutes = currentDate.getMinutes();
 	await Notifications.cancelAllScheduledNotificationsAsync();
-	await Notifications.scheduleNotificationAsync({
-		content: {
-			title: "Expiration Notification",
-			body: body,
-			data: { data: 'goes here' },
-		},
-		// setting notification to be sent a minute after signing in
-		trigger: { hour: currentHour, minute: currentMinutes+1, repeats: true, },
-	});
+	if(pro.length > 0){
+		await Notifications.scheduleNotificationAsync({
+			content: {
+				title: "Expiration Notification",
+				body: body,
+				data: { data: 'goes here' },
+			},
+			// setting notification to be sent a minute after signing in
+			trigger: { hour: currentHour, minute: currentMinutes+1, repeats: true, },
+		});
+	}
 }
 
 // code is taken from https://docs.expo.dev/versions/latest/sdk/notifications/

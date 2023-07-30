@@ -1,6 +1,7 @@
 import db_req from '../../../requests/db_req';
 import * as ImageManipulator from 'expo-image-manipulator';
 
+
 // resize the image and parse it to base64
 const downloadImage = async (url, width, height ) => {
     
@@ -28,19 +29,25 @@ const searchPicByBarcode = async(oneOfResults, width, height) => {
     }
 }
 const imgSearch = async (searchTerm, targetWidth, targetHeight) => {
-    const cx = 'a35009a4b442446a1'; 
-    const apiKey = 'AIzaSyCbip8NqTJgeyLnCh6iyAmaL4s08P76to0';
-    const country =  'countryIL'
-    // search engine for images of products in israel searched by barcode
-    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${searchTerm}&cr=${country}&searchType=image`;
-    const response = await fetch(url);
-    // convert fata to json
-    const data = await response.json();
-    if (data.items && data.items.length > 0) {
-        return await searchPicByBarcode (data.items[0], targetWidth, targetHeight)
-    } else {
-        return null;
+    try{
+        const cx = 'a35009a4b442446a1'; 
+        const apiKey = 'AIzaSyCbip8NqTJgeyLnCh6iyAmaL4s08P76to0';
+        const country =  'countryIL'
+        // search engine for images of products in israel searched by barcode
+        const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${searchTerm}&cr=${country}&searchType=image`;
+        const response = await fetch(url);
+        // convert fata to json
+        const data = await response.json();
+        if (data.items && data.items.length > 0) {
+            return await searchPicByBarcode (data.items[0], targetWidth, targetHeight)
+        } else {
+            return null;
+        }
+
+    }catch{
+        return null
     }
+    
 };
 
 
@@ -61,7 +68,10 @@ const ProductImgSearch = async (searchTerm) => {
         // return the image string
         return searchResult
     } else {
+        imageOfProduct = await db_req("products", "images", "get", { barcode: "no image found" })
+        await saveToMongoDB(searchTerm, imageOfProduct[0].image);
         console.log('No search result found.');
+        return imageOfProduct[0].image;
     }
 };
 export default ProductImgSearch;
