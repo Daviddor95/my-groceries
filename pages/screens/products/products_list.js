@@ -7,6 +7,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import Product from '../../components/product';
 import db_req from '../../../requests/db_req';
 import ProductImgSearch from './img_search';
+const APROXIMATE_PRODUCTS_LIMIT = 100000000;
 
 
 // sorting the array by ascending expiration  dates
@@ -367,7 +368,7 @@ export default function ProductsListScreen() {
                 
                 // adding the new added product to a temporary array
                 tempProductsArray.push({
-                    id: productsOfUser.length+1,
+                    id: productsOfUser.length + APROXIMATE_PRODUCTS_LIMIT,
                     barcode:barcodeOrName,
                     name: nameOfProduct,
                     expiryDate: lastProduct.exp_date,
