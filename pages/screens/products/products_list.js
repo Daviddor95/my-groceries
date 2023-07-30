@@ -29,6 +29,14 @@ function sortByExpirationDates(givenArray){
     return givenArray;
 }
 
+// create a unique id
+function generateId(barcode) {
+    const timeNow = Date.now();
+    console.log(`${barcode}${timeNow}` + "   "+ typeof (`${barcode}${timeNow}`))
+    return `${barcode}${timeNow}`;
+
+}
+
 // updating the products of every tab
 function updateEveryProductsClass(products,setFrPr,setKCPr, setRefPr){
     const arrayKitchenCabinet = []
@@ -367,7 +375,7 @@ export default function ProductsListScreen() {
                 
                 // adding the new added product to a temporary array
                 tempProductsArray.push({
-                    id: productsOfUser.length+1,
+                    id: generateId(barcodeOrName),
                     barcode:barcodeOrName,
                     name: nameOfProduct,
                     expiryDate: lastProduct.exp_date,
