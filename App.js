@@ -313,6 +313,7 @@ const styles = StyleSheet.create({
 
 async function schedulePushNotification(pro) {
 	let body = "The following products will expire soon:\n";
+	count = 0 //number of soon expiring products
 	for (const produ of pro) {
 		const expDat = new Date(produ.expDate);
     	const today = new Date();
@@ -322,10 +323,13 @@ async function schedulePushNotification(pro) {
 		// edit the body of notification to be all the products with epiration date in less then 4 days
     	if (daysDifference <= 3 && daysDifference >0) {
       	body += `${produ.name} (expires in ${daysDifference} days)\n`;
+		count = count + 1
     	} else if (daysDifference ==0) {
 			body += `${produ.name} (expires today!)\n`;
+			count = count + 1
 		} else if (daysDifference <0) {
 			body += `${produ.name} (already expired! ${produ.expDate})\n`;
+			count = count + 1
 		}
 	}
 	
@@ -333,7 +337,7 @@ async function schedulePushNotification(pro) {
 	const currentHour = currentDate.getHours();
 	const currentMinutes = currentDate.getMinutes();
 	await Notifications.cancelAllScheduledNotificationsAsync();
-	if(pro.length > 0){
+	if(pro.length > 0 && count > 0){
 		await Notifications.scheduleNotificationAsync({
 			content: {
 				title: "Expiration Notification",
