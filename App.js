@@ -8,7 +8,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useAuthRequest, exchangeCodeAsync, revokeAsync, ResponseType, fetchUserInfoAsync } from 'expo-auth-session';
 import ProductsScreen from './pages/screens/products/products';
 import RecipesScreen from './pages/screens/recipes/recipes';
-import SettingsScreen from './pages/screens/options/options';
 import db_req from './requests/db_req';
 import LoadingScreen from './pages/screens/products/loading';
 import * as Device from 'expo-device';
@@ -229,7 +228,6 @@ export default function App() {
 						<>
 							<Drawer.Screen name="ProductsScreen" component={ProductsScreen} />
 							<Drawer.Screen name="RecipesScreen" component={RecipesScreen} />
-							<Drawer.Screen name="Settings" component={SettingsScreen} />
 						</>
 					) : (
 						<>

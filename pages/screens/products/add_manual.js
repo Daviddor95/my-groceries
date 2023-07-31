@@ -50,7 +50,7 @@ export default function AddManual() {
      * @param {Event} e 
      */
     const addProduct = async (e) => {
-        if (name == 0 || quantity == 0 || selectedUnit == 0 || loc == 0) {
+        if (name == 0 || quantity == 0 || selectedUnit == 0 || loc == 0 || dateStr == 'Exp. date') {
             setErr(true);
         } else {
             const updateStr = { $push: {
