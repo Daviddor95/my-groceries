@@ -32,7 +32,6 @@ function sortByExpirationDates(givenArray){
 // create a unique id
 function generateId(barcode) {
     const timeNow = Date.now();
-    console.log(`${barcode}${timeNow}` + "   "+ typeof (`${barcode}${timeNow}`))
     return `${barcode}${timeNow}`;
 
 }
