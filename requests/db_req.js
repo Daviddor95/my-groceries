@@ -8,7 +8,7 @@
  * @returns Promise<Response>
  */
 export default async function db_req(database, coll, req_type, req) {
-    return res = await fetch('https://mongodbdriver.azurewebsites.net/api/driver?code=kTjkzOm7Ckr4SvjHuD_UQy1I1k-VgtYFSsx5ZH0QYNnqAzFu4nQJow==', {
+    return res = await fetch('https://mongodbdriver.azurewebsites.net/api/driver?code=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
