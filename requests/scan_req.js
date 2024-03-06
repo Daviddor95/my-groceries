@@ -5,7 +5,7 @@
  * @returns Promise<Response>
  */
 export default async function scan_req(img) {
-    return ret = await fetch('https://datescan.azurewebsites.net/api/date_scan?code=6yVtlA7nN71t1o_kH2C3E3CWBCNvfTsdhlfAnBSEsB-kAzFuk8PoNw==', {
+    return ret = await fetch('https://datescan.azurewebsites.net/api/date_scan?code=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
