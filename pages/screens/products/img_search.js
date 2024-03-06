@@ -31,7 +31,7 @@ const searchPicByBarcode = async(oneOfResults, width, height) => {
 const imgSearch = async (searchTerm, targetWidth, targetHeight) => {
     try{
         const cx = 'a35009a4b442446a1'; 
-        const apiKey = 'AIzaSyCbip8NqTJgeyLnCh6iyAmaL4s08P76to0';
+        const apiKey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
         const country =  'countryIL'
         // search engine for images of products in israel searched by barcode
         const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${searchTerm}&cr=${country}&searchType=image`;
